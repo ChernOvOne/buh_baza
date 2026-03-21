@@ -1,0 +1,1057 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AccountingOS — Панель</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:      #050508;
+  --s1:      #0a0a12;
+  --s2:      #0d0d1a;
+  --s3:      #111124;
+  --border:  #1c1c2e;
+  --border2: #252538;
+  --acc:     #00d4ff;
+  --acc2:    #7c3aed;
+  --green:   #00ff88;
+  --red:     #ff4d6d;
+  --gold:    #ffd700;
+  --text:    #e2e8f0;
+  --text2:   #a0aec0;
+  --muted:   #606880;
+  --r:       8px;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'JetBrains Mono', monospace;
+  min-height: 100vh;
+  display: flex;
+  overflow: hidden;
+}
+
+/* ─── SIDEBAR ─────────────────────────────────────────────────────── */
+.sidebar {
+  width: 220px;
+  flex-shrink: 0;
+  background: var(--s1);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  position: sticky;
+  top: 0;
+}
+.sidebar-logo {
+  padding: 24px 20px 20px;
+  border-bottom: 1px solid var(--border);
+}
+.logo-mark {
+  width: 36px; height: 36px;
+  background: linear-gradient(135deg, var(--acc), var(--acc2));
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px;
+  box-shadow: 0 0 16px rgba(0,212,255,0.2);
+  margin-bottom: 10px;
+}
+.logo-name {
+  font-family: 'Syne', sans-serif;
+  font-size: 15px; font-weight: 800;
+  letter-spacing: -0.3px;
+}
+.logo-ver { font-size: 9px; color: var(--muted); letter-spacing: 2px; text-transform: uppercase; margin-top: 2px; }
+
+nav { flex: 1; padding: 16px 12px; }
+.nav-section { font-size: 9px; color: var(--muted); letter-spacing: 2px; text-transform: uppercase; padding: 14px 8px 6px; }
+.nav-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 12px;
+  color: var(--text2);
+  transition: background 0.15s, color 0.15s;
+  margin-bottom: 2px;
+  user-select: none;
+}
+.nav-item:hover { background: var(--s3); color: var(--text); }
+.nav-item.active { background: rgba(0,212,255,0.08); color: var(--acc); border: 1px solid rgba(0,212,255,0.15); }
+.nav-icon { font-size: 14px; width: 20px; text-align: center; }
+
+.sidebar-footer {
+  padding: 16px;
+  border-top: 1px solid var(--border);
+}
+.btn-report {
+  width: 100%;
+  padding: 10px;
+  background: linear-gradient(135deg, rgba(0,212,255,0.15), rgba(124,58,237,0.15));
+  border: 1px solid rgba(0,212,255,0.3);
+  border-radius: 6px;
+  color: var(--acc);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  cursor: pointer;
+  transition: all 0.2s;
+  letter-spacing: 0.5px;
+}
+.btn-report:hover { background: rgba(0,212,255,0.15); box-shadow: 0 0 16px rgba(0,212,255,0.15); }
+.btn-logout {
+  width: 100%;
+  margin-top: 8px;
+  padding: 8px;
+  background: transparent;
+  border: 1px solid var(--border2);
+  border-radius: 6px;
+  color: var(--muted);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.btn-logout:hover { border-color: var(--red); color: var(--red); }
+
+/* ─── MAIN ──────────────────────────────────────────────────────────── */
+.main {
+  flex: 1;
+  overflow-y: auto;
+  height: 100vh;
+}
+.topbar {
+  position: sticky; top: 0; z-index: 10;
+  background: rgba(5,5,8,0.85);
+  backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--border);
+  padding: 0 32px;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.page-title {
+  font-family: 'Syne', sans-serif;
+  font-size: 16px; font-weight: 700;
+  letter-spacing: -0.3px;
+}
+.topbar-right {
+  display: flex; align-items: center; gap: 16px;
+}
+.month-picker {
+  display: flex; align-items: center; gap: 8px;
+}
+.month-picker select {
+  background: var(--s2);
+  border: 1px solid var(--border2);
+  border-radius: 6px;
+  color: var(--text);
+  padding: 6px 10px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  outline: none;
+  cursor: pointer;
+}
+.live-dot {
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  background: var(--green);
+  box-shadow: 0 0 6px var(--green);
+  animation: pulse 2s infinite;
+}
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+.live-label { font-size: 10px; color: var(--muted); }
+
+/* ─── CONTENT ────────────────────────────────────────────────────── */
+.content { padding: 28px 32px; }
+
+/* Pages */
+.page { display: none; }
+.page.active { display: block; animation: fadeIn 0.25s ease; }
+@keyframes fadeIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:none} }
+
+/* ─── KPI CARDS ──────────────────────────────────────────────────── */
+.kpi-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 16px; margin-bottom: 24px; }
+.kpi-card {
+  background: var(--s2);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  padding: 20px;
+  position: relative;
+  overflow: hidden;
+  transition: border-color 0.2s;
+}
+.kpi-card:hover { border-color: var(--border2); }
+.kpi-card::before {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0; height: 2px;
+}
+.kpi-card.green::before { background: var(--green); box-shadow: 0 0 8px var(--green); }
+.kpi-card.red::before   { background: var(--red);   box-shadow: 0 0 8px var(--red);   }
+.kpi-card.acc::before   { background: var(--acc);   box-shadow: 0 0 8px var(--acc);   }
+.kpi-card.gold::before  { background: var(--gold);  box-shadow: 0 0 8px var(--gold);  }
+.kpi-label { font-size: 10px; color: var(--muted); letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 10px; }
+.kpi-value { font-family: 'Syne', sans-serif; font-size: 26px; font-weight: 700; line-height: 1; }
+.kpi-value.green { color: var(--green); }
+.kpi-value.red   { color: var(--red); }
+.kpi-value.acc   { color: var(--acc); }
+.kpi-value.gold  { color: var(--gold); }
+.kpi-sub { font-size: 10px; color: var(--muted); margin-top: 8px; }
+
+/* ─── GRID LAYOUT ────────────────────────────────────────────────── */
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; }
+.grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; margin-bottom: 20px; }
+
+/* ─── PANEL / TABLE ──────────────────────────────────────────────── */
+.panel {
+  background: var(--s2);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  overflow: hidden;
+  margin-bottom: 20px;
+}
+.panel-head {
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.panel-title { font-family: 'Syne', sans-serif; font-size: 13px; font-weight: 700; }
+.panel-body { padding: 20px; }
+
+table { width: 100%; border-collapse: collapse; font-size: 12px; }
+thead tr { background: var(--s3); }
+th { padding: 10px 14px; text-align: left; font-size: 10px; color: var(--muted); letter-spacing: 1px; text-transform: uppercase; font-weight: 500; }
+td { padding: 10px 14px; border-top: 1px solid var(--border); color: var(--text2); }
+tr:hover td { background: rgba(255,255,255,0.02); }
+.td-green { color: var(--green) !important; font-weight: 600; }
+.td-red   { color: var(--red)   !important; font-weight: 600; }
+.td-gold  { color: var(--gold)  !important; font-weight: 600; }
+.td-acc   { color: var(--acc)   !important; font-weight: 600; }
+.td-right { text-align: right; }
+.td-del { color: var(--muted); cursor: pointer; opacity: 0; transition: opacity 0.15s, color 0.15s; padding: 4px 8px; border-radius: 4px; }
+tr:hover .td-del { opacity: 1; }
+.td-del:hover { color: var(--red); background: rgba(255,77,109,0.1); }
+
+/* ─── FORM ─────────────────────────────────────────────────────── */
+.form-grid { display: grid; gap: 14px; }
+.form-row { display: grid; grid-template-columns: repeat(auto-fit,minmax(160px,1fr)); gap: 12px; }
+.form-field { display: flex; flex-direction: column; gap: 6px; }
+.form-field label { font-size: 10px; color: var(--muted); letter-spacing: 1px; text-transform: uppercase; }
+.form-field input, .form-field select, .form-field textarea {
+  background: var(--s1);
+  border: 1px solid var(--border2);
+  border-radius: 6px;
+  padding: 9px 12px;
+  color: var(--text);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  width: 100%;
+}
+.form-field input:focus, .form-field select:focus, .form-field textarea:focus {
+  border-color: var(--acc);
+  box-shadow: 0 0 0 2px rgba(0,212,255,0.1);
+}
+.form-field select option { background: var(--s1); }
+.btn-submit {
+  padding: 11px 24px;
+  background: linear-gradient(135deg, #00d4ff, #0099cc);
+  border: none;
+  border-radius: 6px;
+  color: #050508;
+  font-family: 'Syne', sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  transition: opacity 0.2s, transform 0.15s;
+  box-shadow: 0 0 16px rgba(0,212,255,0.2);
+}
+.btn-submit:hover { opacity: 0.88; transform: translateY(-1px); }
+.btn-submit:active { transform: none; }
+
+/* ─── BADGE ─────────────────────────────────────────────────────── */
+.badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+.badge-green { background: rgba(0,255,136,0.1); color: var(--green); border: 1px solid rgba(0,255,136,0.2); }
+.badge-red   { background: rgba(255,77,109,0.1); color: var(--red);   border: 1px solid rgba(255,77,109,0.2); }
+.badge-acc   { background: rgba(0,212,255,0.1);  color: var(--acc);   border: 1px solid rgba(0,212,255,0.2); }
+.badge-gold  { background: rgba(255,215,0,0.1);  color: var(--gold);  border: 1px solid rgba(255,215,0,0.2); }
+
+/* ─── TOAST ─────────────────────────────────────────────────────── */
+#toast {
+  position: fixed; bottom: 24px; right: 24px; z-index: 9999;
+  background: var(--s3);
+  border: 1px solid var(--border2);
+  border-radius: 8px;
+  padding: 12px 18px;
+  font-size: 12px;
+  display: flex; align-items: center; gap: 10px;
+  transform: translateY(80px);
+  opacity: 0;
+  transition: all 0.3s cubic-bezier(0.16,1,0.3,1);
+  pointer-events: none;
+}
+#toast.show { transform: none; opacity: 1; }
+#toast.success { border-color: rgba(0,255,136,0.3); color: var(--green); }
+#toast.error   { border-color: rgba(255,77,109,0.3); color: var(--red); }
+
+/* ─── CHART WRAPPER ─────────────────────────────────────────────── */
+.chart-wrap { position: relative; height: 240px; }
+
+/* ─── STAT ROW ──────────────────────────────────────────────────── */
+.stat-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--border); }
+.stat-row:last-child { border-bottom: none; }
+.stat-label { font-size: 11px; color: var(--text2); }
+.stat-val   { font-size: 13px; font-weight: 600; font-family: 'Syne', sans-serif; }
+
+/* ─── SCROLLBAR ─────────────────────────────────────────────────── */
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+
+.empty-state { text-align: center; padding: 40px; color: var(--muted); font-size: 12px; }
+.spinner { display: inline-block; width: 14px; height: 14px; border: 2px solid var(--border2); border-top-color: var(--acc); border-radius: 50%; animation: spin 0.6s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-mark">📊</div>
+    <div class="logo-name">AccountingOS</div>
+    <div class="logo-ver">v1.0 • Finance</div>
+  </div>
+  <nav>
+    <div class="nav-section">Навигация</div>
+    <div class="nav-item active" data-page="dashboard">
+      <span class="nav-icon">🏠</span> Дашборд
+    </div>
+    <div class="nav-item" data-page="daily">
+      <span class="nav-icon">📅</span> Ежедневник
+    </div>
+    <div class="nav-item" data-page="expenses">
+      <span class="nav-icon">💸</span> Расходы
+    </div>
+    <div class="nav-item" data-page="ads">
+      <span class="nav-icon">📣</span> Реклама
+    </div>
+    <div class="nav-section">Аналитика</div>
+    <div class="nav-item" data-page="stats">
+      <span class="nav-icon">📈</span> Статистика
+    </div>
+  </nav>
+  <div class="sidebar-footer">
+    <button class="btn-report" onclick="sendReport()">⚡ Отправить отчёт</button>
+    <button class="btn-logout" onclick="logout()">↩ Выйти</button>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<div class="main">
+  <div class="topbar">
+    <div class="page-title" id="pageTitle">Дашборд</div>
+    <div class="topbar-right">
+      <div class="month-picker">
+        <select id="monthSel" onchange="onMonthChange()"></select>
+        <select id="yearSel" onchange="onMonthChange()"></select>
+      </div>
+      <div style="display:flex;align-items:center;gap:6px">
+        <div class="live-dot"></div>
+        <span class="live-label" id="liveTime"></span>
+      </div>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <!-- ═══ DASHBOARD PAGE ═══════════════════════════════════════════ -->
+    <div class="page active" id="page-dashboard">
+      <div class="kpi-grid">
+        <div class="kpi-card green">
+          <div class="kpi-label">Выручка месяц</div>
+          <div class="kpi-value green" id="kpi-revenue">—</div>
+          <div class="kpi-sub" id="kpi-revenue-sub">загрузка...</div>
+        </div>
+        <div class="kpi-card red">
+          <div class="kpi-label">Расходы (нал)</div>
+          <div class="kpi-value red" id="kpi-expense">—</div>
+          <div class="kpi-sub" id="kpi-expense-sub">загрузка...</div>
+        </div>
+        <div class="kpi-card acc">
+          <div class="kpi-label">Чистая прибыль</div>
+          <div class="kpi-value acc" id="kpi-net">—</div>
+          <div class="kpi-sub" id="kpi-net-sub">за текущий месяц</div>
+        </div>
+        <div class="kpi-card gold">
+          <div class="kpi-label">Ср. выручка / день</div>
+          <div class="kpi-value gold" id="kpi-avg">—</div>
+          <div class="kpi-sub" id="kpi-avg-sub">по заполненным дням</div>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div class="panel">
+          <div class="panel-head">
+            <span class="panel-title">📈 Выручка по дням</span>
+          </div>
+          <div class="panel-body">
+            <div class="chart-wrap"><canvas id="chartRevenue"></canvas></div>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-head">
+            <span class="panel-title">💰 Расходы по категориям</span>
+          </div>
+          <div class="panel-body">
+            <div class="chart-wrap"><canvas id="chartExpCat"></canvas></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div class="panel">
+          <div class="panel-head"><span class="panel-title">👥 Инкассация партнёров</span></div>
+          <div class="panel-body" id="incas-summary">
+            <div class="stat-row"><span class="stat-label">Артём</span><span class="stat-val td-acc" id="incas-artem">—</span></div>
+            <div class="stat-row"><span class="stat-label">Роман</span><span class="stat-val td-acc" id="incas-roman">—</span></div>
+            <div class="stat-row"><span class="stat-label">Михаил</span><span class="stat-val td-acc" id="incas-mikhail">—</span></div>
+            <div class="stat-row"><span class="stat-label" style="font-weight:600;color:var(--text)">ИТОГО</span><span class="stat-val td-gold" id="incas-total">—</span></div>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-head"><span class="panel-title">🔥 Последние записи</span></div>
+          <div class="panel-body" style="padding:0">
+            <table id="recent-table">
+              <thead><tr><th>Дата</th><th>Доход</th><th>Расход</th><th>Чистый</th></tr></thead>
+              <tbody id="recent-body"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ DAILY PAGE ════════════════════════════════════════════════ -->
+    <div class="page" id="page-daily">
+      <div class="panel" style="margin-bottom:20px">
+        <div class="panel-head"><span class="panel-title">➕ Добавить запись</span></div>
+        <div class="panel-body">
+          <form class="form-grid" id="dailyForm">
+            <div class="form-row">
+              <div class="form-field">
+                <label>Дата *</label>
+                <input type="date" id="d-date" required>
+              </div>
+              <div class="form-field">
+                <label>Доход ₽</label>
+                <input type="number" id="d-revenue" placeholder="0.00" step="0.01" min="0">
+              </div>
+              <div class="form-field">
+                <label>Расход ₽</label>
+                <input type="number" id="d-expense" placeholder="0.00" step="0.01" min="0">
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-field">
+                <label>Инкас Артём ₽</label>
+                <input type="number" id="d-artem" placeholder="0.00" step="0.01" min="0">
+              </div>
+              <div class="form-field">
+                <label>Инкас Роман ₽</label>
+                <input type="number" id="d-roman" placeholder="0.00" step="0.01" min="0">
+              </div>
+              <div class="form-field">
+                <label>Инкас Михаил ₽</label>
+                <input type="number" id="d-mikhail" placeholder="0.00" step="0.01" min="0">
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-field" style="grid-column:1/-1">
+                <label>Примечание</label>
+                <input type="text" id="d-note" placeholder="Необязательно">
+              </div>
+            </div>
+            <div><button type="submit" class="btn-submit">Сохранить запись</button></div>
+          </form>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-head">
+          <span class="panel-title">📋 Записи за месяц</span>
+          <span id="daily-count" style="font-size:11px;color:var(--muted)"></span>
+        </div>
+        <div style="overflow-x:auto">
+          <table>
+            <thead><tr><th>Дата</th><th>Доход</th><th>Расход</th><th>Чистый</th><th>Инкас Артём</th><th>Инкас Роман</th><th>Инкас Михаил</th><th>Итого инкас</th><th>Примечание</th><th></th></tr></thead>
+            <tbody id="daily-body"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ EXPENSES PAGE ═════════════════════════════════════════════ -->
+    <div class="page" id="page-expenses">
+      <div class="panel" style="margin-bottom:20px">
+        <div class="panel-head"><span class="panel-title">➕ Добавить расход</span></div>
+        <div class="panel-body">
+          <form class="form-grid" id="expenseForm">
+            <div class="form-row">
+              <div class="form-field">
+                <label>Дата *</label>
+                <input type="date" id="e-date" required>
+              </div>
+              <div class="form-field">
+                <label>Категория *</label>
+                <select id="e-category">
+                  <option>Реклама</option><option>Сервера</option>
+                  <option>LeadTex</option><option>ФНС</option>
+                  <option>ТГ Прем</option><option>СКАМ</option><option>Прочее</option>
+                </select>
+              </div>
+              <div class="form-field">
+                <label>Сумма ₽ *</label>
+                <input type="number" id="e-amount" required placeholder="0.00" step="0.01" min="0">
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-field" style="flex:2">
+                <label>Описание *</label>
+                <input type="text" id="e-desc" required placeholder="Оплата серверов Fornex">
+              </div>
+              <div class="form-field" style="flex:2">
+                <label>Ссылка на чек</label>
+                <input type="url" id="e-receipt" placeholder="https://disk.yandex.ru/...">
+              </div>
+            </div>
+            <div><button type="submit" class="btn-submit">Добавить расход</button></div>
+          </form>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-head">
+          <span class="panel-title">💸 Расходы со счёта</span>
+          <span id="exp-total" style="font-size:12px;color:var(--red);font-weight:600"></span>
+        </div>
+        <div style="overflow-x:auto">
+          <table>
+            <thead><tr><th>Дата</th><th>Категория</th><th>Описание</th><th>Сумма</th><th>Чек</th><th></th></tr></thead>
+            <tbody id="expense-body"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ ADS PAGE ══════════════════════════════════════════════════ -->
+    <div class="page" id="page-ads">
+      <div class="panel" style="margin-bottom:20px">
+        <div class="panel-head"><span class="panel-title">➕ Добавить рекламу</span></div>
+        <div class="panel-body">
+          <form class="form-grid" id="adsForm">
+            <div class="form-row">
+              <div class="form-field">
+                <label>Дата *</label>
+                <input type="date" id="a-date" required>
+              </div>
+              <div class="form-field">
+                <label>Формат</label>
+                <input type="text" id="a-format" placeholder="2/48, 1/24...">
+              </div>
+              <div class="form-field">
+                <label>Сумма ₽ *</label>
+                <input type="number" id="a-amount" required placeholder="0.00" step="0.01" min="0">
+              </div>
+              <div class="form-field">
+                <label>Подписчиков +</label>
+                <input type="number" id="a-subs" placeholder="0" min="0">
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-field">
+                <label>Название канала *</label>
+                <input type="text" id="a-name" required placeholder="TikTok Updates 🔥">
+              </div>
+              <div class="form-field">
+                <label>Ссылка на канал</label>
+                <input type="url" id="a-channel" placeholder="https://t.me/...">
+              </div>
+              <div class="form-field">
+                <label>Скрин</label>
+                <input type="url" id="a-screen" placeholder="https://disk.yandex.ru/...">
+              </div>
+            </div>
+            <div><button type="submit" class="btn-submit">Добавить запись</button></div>
+          </form>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-head">
+          <span class="panel-title">📣 Рекламные кампании</span>
+          <span id="ads-total" style="font-size:12px;color:var(--gold);font-weight:600"></span>
+        </div>
+        <div style="overflow-x:auto">
+          <table>
+            <thead><tr><th>Дата</th><th>Формат</th><th>Название</th><th>Сумма</th><th>Подп.</th><th>Цена/подп.</th><th>Канал</th><th></th></tr></thead>
+            <tbody id="ads-body"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ STATS PAGE ════════════════════════════════════════════════ -->
+    <div class="page" id="page-stats">
+      <div class="panel" style="margin-bottom:20px">
+        <div class="panel-head"><span class="panel-title">📈 Выручка по месяцам</span></div>
+        <div class="panel-body"><div class="chart-wrap" style="height:280px"><canvas id="chartMonthly"></canvas></div></div>
+      </div>
+      <div class="grid-2">
+        <div class="panel">
+          <div class="panel-head"><span class="panel-title">📊 Сводная таблица</span></div>
+          <div style="overflow-x:auto">
+            <table>
+              <thead><tr><th>Месяц</th><th>Выручка</th><th>Расход</th><th>Чистый</th><th>Ср./день</th><th>Дней</th></tr></thead>
+              <tbody id="stats-body"></tbody>
+            </table>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-head"><span class="panel-title">🎯 Реклама по месяцам</span></div>
+          <div style="overflow-x:auto">
+            <table>
+              <thead><tr><th>Месяц</th><th>Потрачено</th><th>Кампаний</th><th>Подписчиков</th></tr></thead>
+              <tbody id="ads-stats-body"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /content -->
+</div><!-- /main -->
+
+<!-- TOAST -->
+<div id="toast">✓ Сохранено</div>
+
+<script>
+// ═══ STATE ════════════════════════════════════════════════════════════
+const MONTHS = ['Январь','Февраль','Март','Апрель','Май','Июнь',
+                'Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
+
+let curPage = 'dashboard';
+let chartRevenue = null, chartExpCat = null, chartMonthly = null;
+
+// ═══ INIT ══════════════════════════════════════════════════════════════
+function init() {
+  // Month/Year pickers
+  const now = new Date();
+  const mSel = document.getElementById('monthSel');
+  const ySel = document.getElementById('yearSel');
+  MONTHS.forEach((m, i) => {
+    const opt = document.createElement('option');
+    opt.value = i + 1; opt.textContent = m;
+    if (i === now.getMonth()) opt.selected = true;
+    mSel.appendChild(opt);
+  });
+  for (let y = 2025; y <= now.getFullYear() + 1; y++) {
+    const opt = document.createElement('option');
+    opt.value = y; opt.textContent = y;
+    if (y === now.getFullYear()) opt.selected = true;
+    ySel.appendChild(opt);
+  }
+
+  // Set today's date in forms
+  const today = now.toISOString().slice(0, 10);
+  ['d-date','e-date','a-date'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = today;
+  });
+
+  // Nav
+  document.querySelectorAll('.nav-item').forEach(el => {
+    el.addEventListener('click', () => navigate(el.dataset.page));
+  });
+
+  // Forms
+  document.getElementById('dailyForm').addEventListener('submit', submitDaily);
+  document.getElementById('expenseForm').addEventListener('submit', submitExpense);
+  document.getElementById('adsForm').addEventListener('submit', submitAd);
+
+  // Clock
+  setInterval(() => {
+    document.getElementById('liveTime').textContent =
+      new Date().toLocaleTimeString('ru', { hour:'2-digit', minute:'2-digit', second:'2-digit' });
+  }, 1000);
+
+  loadDashboard();
+}
+
+// ═══ NAVIGATION ════════════════════════════════════════════════════════
+const pageTitles = { dashboard:'Дашборд', daily:'Ежедневный учёт', expenses:'Расходы со счёта', ads:'Реклама', stats:'Статистика' };
+
+function navigate(page) {
+  curPage = page;
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById(`page-${page}`).classList.add('active');
+  document.querySelector(`[data-page="${page}"]`).classList.add('active');
+  document.getElementById('pageTitle').textContent = pageTitles[page] || page;
+
+  if (page === 'dashboard')  loadDashboard();
+  if (page === 'daily')      loadDaily();
+  if (page === 'expenses')   loadExpenses();
+  if (page === 'ads')        loadAds();
+  if (page === 'stats')      loadStats();
+}
+
+function onMonthChange() {
+  navigate(curPage);
+}
+
+// ═══ HELPERS ════════════════════════════════════════════════════════════
+const getM = () => document.getElementById('monthSel').value;
+const getY = () => document.getElementById('yearSel').value;
+const fmt  = v => (v||0).toLocaleString('ru',{minimumFractionDigits:2}) + ' ₽';
+
+async function api(method, url, body) {
+  const r = await fetch(url, {
+    method,
+    headers: body ? {'Content-Type':'application/json'} : {},
+    body: body ? JSON.stringify(body) : undefined,
+  });
+  if (r.status === 401) { window.location.href='/login'; return null; }
+  return r.json();
+}
+
+function toast(msg, type = 'success') {
+  const el = document.getElementById('toast');
+  el.textContent = (type==='success'?'✓ ':'✗ ') + msg;
+  el.className = `show ${type}`;
+  setTimeout(() => el.className = '', 3000);
+}
+
+// ═══ DASHBOARD ══════════════════════════════════════════════════════════
+async function loadDashboard() {
+  const data = await api('GET', `/api/stats`);
+  if (!data) return;
+
+  const b = data.balance || {};
+  const rev = b.revenue || 0;
+  const exp = b.expense || 0;
+  const net = b.net || 0;
+
+  document.getElementById('kpi-revenue').textContent = fmt(rev);
+  document.getElementById('kpi-expense').textContent = fmt(exp);
+  document.getElementById('kpi-net').textContent     = fmt(net);
+  document.getElementById('kpi-net').className       = `kpi-value ${net >= 0 ? 'green' : 'red'}`;
+
+  // Recent entries for avg
+  const entries = await api('GET', `/api/daily?month=${getM()}&year=${getY()}`);
+  const days    = entries?.length || 0;
+  const avg     = days > 0 ? rev / days : 0;
+  document.getElementById('kpi-avg').textContent  = fmt(avg);
+  document.getElementById('kpi-avg-sub').textContent = `${days} дней с данными`;
+  document.getElementById('kpi-revenue-sub').textContent = `${days} дней`;
+
+  // Incas
+  if (entries) {
+    const ia = entries.reduce((s,e)=>s+e.incas_artem,0);
+    const ir = entries.reduce((s,e)=>s+e.incas_roman,0);
+    const im = entries.reduce((s,e)=>s+e.incas_mikhail,0);
+    document.getElementById('incas-artem').textContent   = fmt(ia);
+    document.getElementById('incas-roman').textContent   = fmt(ir);
+    document.getElementById('incas-mikhail').textContent = fmt(im);
+    document.getElementById('incas-total').textContent   = fmt(ia+ir+im);
+  }
+
+  // Revenue chart
+  if (entries && entries.length) {
+    const sorted  = [...entries].sort((a,b)=>a.date.localeCompare(b.date));
+    const labels  = sorted.map(e => e.date.slice(5));
+    const revVals = sorted.map(e => e.revenue);
+    const expVals = sorted.map(e => e.expense);
+
+    if (chartRevenue) chartRevenue.destroy();
+    chartRevenue = new Chart(document.getElementById('chartRevenue'), {
+      type: 'bar',
+      data: {
+        labels,
+        datasets: [
+          { label:'Доход', data:revVals, backgroundColor:'rgba(0,255,136,0.5)', borderColor:'#00ff88', borderWidth:1, borderRadius:3 },
+          { label:'Расход',data:expVals, backgroundColor:'rgba(255,77,109,0.4)', borderColor:'#ff4d6d', borderWidth:1, borderRadius:3 },
+        ]
+      },
+      options: {
+        responsive:true, maintainAspectRatio:false,
+        plugins:{ legend:{ labels:{ color:'#a0aec0', font:{size:10} } } },
+        scales:{
+          x:{ ticks:{color:'#606880',font:{size:9}}, grid:{color:'rgba(255,255,255,0.03)'} },
+          y:{ ticks:{color:'#606880',font:{size:9},callback:v=>(v/1000).toFixed(0)+'k'}, grid:{color:'rgba(255,255,255,0.05)'} }
+        }
+      }
+    });
+  }
+
+  // Expense by category chart
+  if (data.expByCategory && data.expByCategory.length) {
+    const cats   = data.expByCategory.map(r=>r.category);
+    const totals = data.expByCategory.map(r=>r.total);
+    const colors = ['#ff4d6d','#00d4ff','#ffd700','#7c3aed','#00ff88','#ff8c42','#a78bfa'];
+
+    if (chartExpCat) chartExpCat.destroy();
+    chartExpCat = new Chart(document.getElementById('chartExpCat'), {
+      type:'doughnut',
+      data:{ labels:cats, datasets:[{ data:totals, backgroundColor:colors.slice(0,cats.length), borderWidth:0, hoverOffset:6 }] },
+      options:{
+        responsive:true, maintainAspectRatio:false, cutout:'65%',
+        plugins:{ legend:{ position:'right', labels:{ color:'#a0aec0', font:{size:10}, padding:12 } } }
+      }
+    });
+  }
+
+  // Recent 5 rows
+  if (entries) {
+    const top5 = [...entries].sort((a,b)=>b.date.localeCompare(a.date)).slice(0,5);
+    const tbody = document.getElementById('recent-body');
+    tbody.innerHTML = top5.map(e => {
+      const n = e.revenue - e.expense;
+      return `<tr>
+        <td>${e.date}</td>
+        <td class="td-green">${fmt(e.revenue)}</td>
+        <td class="td-red">${fmt(e.expense)}</td>
+        <td class="${n>=0?'td-green':'td-red'}">${fmt(n)}</td>
+      </tr>`;
+    }).join('') || '<tr><td colspan="4" class="empty-state">Нет данных</td></tr>';
+  }
+}
+
+// ═══ DAILY ══════════════════════════════════════════════════════════════
+async function loadDaily() {
+  const rows = await api('GET', `/api/daily?month=${getM()}&year=${getY()}`);
+  if (!rows) return;
+
+  document.getElementById('daily-count').textContent = `${rows.length} записей`;
+
+  const tbody = document.getElementById('daily-body');
+  tbody.innerHTML = rows.length ? rows.map(e => {
+    const n = e.revenue - e.expense;
+    const incas = e.incas_artem + e.incas_roman + e.incas_mikhail;
+    return `<tr>
+      <td>${e.date}</td>
+      <td class="td-green">${fmt(e.revenue)}</td>
+      <td class="td-red">${fmt(e.expense)}</td>
+      <td class="${n>=0?'td-green':'td-red'}">${fmt(n)}</td>
+      <td class="td-acc">${fmt(e.incas_artem)}</td>
+      <td class="td-acc">${fmt(e.incas_roman)}</td>
+      <td class="td-acc">${fmt(e.incas_mikhail)}</td>
+      <td class="td-gold">${fmt(incas)}</td>
+      <td style="color:var(--muted)">${e.note||'—'}</td>
+      <td><span class="td-del" onclick="delEntry('daily',${e.id})">✕</span></td>
+    </tr>`;
+  }).join('') : `<tr><td colspan="10" class="empty-state">Нет записей за выбранный месяц</td></tr>`;
+}
+
+async function submitDaily(ev) {
+  ev.preventDefault();
+  const body = {
+    date:         document.getElementById('d-date').value,
+    revenue:      +document.getElementById('d-revenue').value || 0,
+    expense:      +document.getElementById('d-expense').value || 0,
+    incas_artem:  +document.getElementById('d-artem').value   || 0,
+    incas_roman:  +document.getElementById('d-roman').value   || 0,
+    incas_mikhail:+document.getElementById('d-mikhail').value  || 0,
+    note:          document.getElementById('d-note').value,
+  };
+  const r = await api('POST', '/api/daily', body);
+  if (r?.ok) { toast('Запись сохранена'); loadDaily(); }
+  else toast(r?.error || 'Ошибка', 'error');
+}
+
+// ═══ EXPENSES ═══════════════════════════════════════════════════════════
+async function loadExpenses() {
+  const rows = await api('GET', `/api/expenses?month=${getM()}&year=${getY()}`);
+  if (!rows) return;
+
+  const total = rows.reduce((s,e)=>s+e.amount, 0);
+  document.getElementById('exp-total').textContent = `Итого: ${fmt(total)}`;
+
+  const tbody = document.getElementById('expense-body');
+  tbody.innerHTML = rows.length ? rows.map(e => `<tr>
+    <td>${e.date}</td>
+    <td><span class="badge badge-${catColor(e.category)}">${e.category}</span></td>
+    <td>${e.description}</td>
+    <td class="td-red">${fmt(e.amount)}</td>
+    <td>${e.receipt_url ? `<a href="${e.receipt_url}" target="_blank" style="color:var(--acc);font-size:10px">→ чек</a>` : '—'}</td>
+    <td><span class="td-del" onclick="delEntry('expenses',${e.id})">✕</span></td>
+  </tr>`).join('') : `<tr><td colspan="6" class="empty-state">Нет расходов за выбранный месяц</td></tr>`;
+}
+
+function catColor(c) {
+  const map = { 'Реклама':'gold','Сервера':'acc','ФНС':'red','LeadTex':'green','ТГ Прем':'green','СКАМ':'red','Прочее':'acc' };
+  return map[c] || 'acc';
+}
+
+async function submitExpense(ev) {
+  ev.preventDefault();
+  const body = {
+    date:        document.getElementById('e-date').value,
+    category:    document.getElementById('e-category').value,
+    description: document.getElementById('e-desc').value,
+    amount:      +document.getElementById('e-amount').value,
+    receipt_url: document.getElementById('e-receipt').value,
+  };
+  const r = await api('POST', '/api/expenses', body);
+  if (r?.ok) { toast('Расход добавлен'); loadExpenses(); ev.target.reset(); }
+  else toast(r?.error || 'Ошибка', 'error');
+}
+
+// ═══ ADS ════════════════════════════════════════════════════════════════
+async function loadAds() {
+  const rows = await api('GET', `/api/ads?month=${getM()}&year=${getY()}`);
+  if (!rows) return;
+
+  const total = rows.reduce((s,e)=>s+e.amount, 0);
+  document.getElementById('ads-total').textContent = `Потрачено: ${fmt(total)}`;
+
+  const tbody = document.getElementById('ads-body');
+  tbody.innerHTML = rows.length ? rows.map(e => {
+    const cps = e.subscribers_gain > 0 ? (e.amount/e.subscribers_gain).toFixed(2)+' ₽' : '—';
+    return `<tr>
+      <td>${e.date}</td>
+      <td><span class="badge badge-acc">${e.format||'—'}</span></td>
+      <td>${e.name}</td>
+      <td class="td-gold">${fmt(e.amount)}</td>
+      <td class="td-green">${e.subscribers_gain||0}</td>
+      <td class="td-acc">${cps}</td>
+      <td>${e.channel_url ? `<a href="${e.channel_url}" target="_blank" style="color:var(--acc);font-size:10px">→ канал</a>` : '—'}</td>
+      <td><span class="td-del" onclick="delEntry('ads',${e.id})">✕</span></td>
+    </tr>`;
+  }).join('') : `<tr><td colspan="8" class="empty-state">Нет рекламных кампаний за выбранный месяц</td></tr>`;
+}
+
+async function submitAd(ev) {
+  ev.preventDefault();
+  const body = {
+    date:             document.getElementById('a-date').value,
+    format:           document.getElementById('a-format').value,
+    amount:           +document.getElementById('a-amount').value,
+    name:             document.getElementById('a-name').value,
+    subscribers_gain: +document.getElementById('a-subs').value||0,
+    channel_url:      document.getElementById('a-channel').value,
+    screenshot_url:   document.getElementById('a-screen').value,
+  };
+  const r = await api('POST', '/api/ads', body);
+  if (r?.ok) { toast('Реклама добавлена'); loadAds(); ev.target.reset(); }
+  else toast(r?.error || 'Ошибка', 'error');
+}
+
+// ═══ STATS ══════════════════════════════════════════════════════════════
+async function loadStats() {
+  const data = await api('GET', '/api/stats');
+  if (!data) return;
+
+  // Monthly chart
+  const months = data.monthly || [];
+  if (months.length) {
+    const labels = months.map(m => {
+      const [y, mo] = m.month.split('-');
+      return MONTHS[+mo-1]?.slice(0,3) + ' ' + y.slice(2);
+    });
+    if (chartMonthly) chartMonthly.destroy();
+    chartMonthly = new Chart(document.getElementById('chartMonthly'), {
+      type:'line',
+      data:{
+        labels,
+        datasets:[
+          { label:'Выручка', data:months.map(m=>m.total_revenue), borderColor:'#00ff88', backgroundColor:'rgba(0,255,136,0.08)', tension:0.4, fill:true, pointRadius:4, pointHoverRadius:6, pointBackgroundColor:'#00ff88' },
+          { label:'Расход',  data:months.map(m=>m.total_expense), borderColor:'#ff4d6d', backgroundColor:'rgba(255,77,109,0.06)', tension:0.4, fill:true, pointRadius:4, pointHoverRadius:6, pointBackgroundColor:'#ff4d6d' },
+        ]
+      },
+      options:{
+        responsive:true, maintainAspectRatio:false,
+        plugins:{ legend:{ labels:{ color:'#a0aec0', font:{size:11} } } },
+        scales:{
+          x:{ ticks:{color:'#606880'}, grid:{color:'rgba(255,255,255,0.04)'} },
+          y:{ ticks:{color:'#606880',callback:v=>(v/1000).toFixed(0)+'k ₽'}, grid:{color:'rgba(255,255,255,0.06)'} }
+        }
+      }
+    });
+  }
+
+  // Summary table
+  const tbody = document.getElementById('stats-body');
+  tbody.innerHTML = months.map(m => {
+    const net = m.total_revenue - m.total_expense;
+    const [y, mo] = m.month.split('-');
+    return `<tr>
+      <td class="td-acc">${MONTHS[+mo-1]} ${y}</td>
+      <td class="td-green">${fmt(m.total_revenue)}</td>
+      <td class="td-red">${fmt(m.total_expense)}</td>
+      <td class="${net>=0?'td-green':'td-red'}">${fmt(net)}</td>
+      <td>${fmt(m.avg_daily)}</td>
+      <td style="color:var(--muted)">${m.days_count}</td>
+    </tr>`;
+  }).join('') || `<tr><td colspan="6" class="empty-state">Нет данных</td></tr>`;
+
+  // Ad stats
+  const adTbody = document.getElementById('ads-stats-body');
+  adTbody.innerHTML = (data.adStats||[]).map(a => {
+    const [y, mo] = a.month.split('-');
+    return `<tr>
+      <td class="td-acc">${MONTHS[+mo-1]} ${y}</td>
+      <td class="td-gold">${fmt(a.total_spent)}</td>
+      <td style="color:var(--muted)">${a.campaigns}</td>
+      <td class="td-green">${a.total_subs||0}</td>
+    </tr>`;
+  }).join('') || `<tr><td colspan="4" class="empty-state">Нет данных</td></tr>`;
+}
+
+// ═══ DELETE ═════════════════════════════════════════════════════════════
+async function delEntry(type, id) {
+  if (!confirm('Удалить запись?')) return;
+  const r = await api('DELETE', `/api/${type}/${id}`);
+  if (r?.ok) { toast('Удалено'); navigate(curPage); }
+  else toast('Ошибка удаления', 'error');
+}
+
+// ═══ REPORT ═════════════════════════════════════════════════════════════
+async function sendReport() {
+  const btn = document.querySelector('.btn-report');
+  btn.textContent = '⏳ Отправка...';
+  btn.disabled = true;
+  const r = await api('POST', '/api/report/send');
+  if (r?.ok) toast('Отчёт отправлен в Telegram!');
+  else toast(r?.error || 'Ошибка отправки', 'error');
+  btn.textContent = '⚡ Отправить отчёт';
+  btn.disabled = false;
+}
+
+// ═══ LOGOUT ═════════════════════════════════════════════════════════════
+async function logout() {
+  await api('POST', '/api/auth/logout');
+  window.location.href = '/login';
+}
+
+// START
+init();
+</script>
+</body>
+</html>
