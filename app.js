@@ -10,7 +10,11 @@ const app = express();
 app.use(express.json());
 app.use(cookieParser());
 app.use(cors({ origin: false }));
-app.use(express.static(path.join(__dirname, 'public')));
+
+// Статика: только CSS/JS/шрифты/картинки.
+// index: false — НЕ отдаём index.html автоматически на GET /
+// иначе браузер получает его в обход авторизации
+app.use(express.static(path.join(__dirname, 'public'), { index: false }));
 
 // ── Хэшируем пароль при старте ──────────────────────────────────────────────
 ;(async () => {
@@ -28,17 +32,15 @@ app.use('/api', require('./routes/api'));
 // ── Страницы ─────────────────────────────────────────────────────────────────
 const auth = require('./middleware/auth');
 
+// /login — публичная
 app.get('/login', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'login.html'));
 });
 
-app.get('/', auth, (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'index.html'));
-});
-
-app.get('/dashboard', auth, (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'index.html'));
-});
+// Все HTML-маршруты дашборда — только с валидным токеном
+app.get('/',           auth, (req, res) => res.sendFile(path.join(__dirname, 'public', 'index.html')));
+app.get('/dashboard',  auth, (req, res) => res.sendFile(path.join(__dirname, 'public', 'index.html')));
+app.get('/index.html', auth, (req, res) => res.sendFile(path.join(__dirname, 'public', 'index.html')));
 
 // ── Cron: ежедневный отчёт ───────────────────────────────────────────────────
 const hour   = process.env.REPORT_HOUR   || 18;
