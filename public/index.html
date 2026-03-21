@@ -391,9 +391,9 @@ tr:hover .td-del { opacity: 1; }
           <div class="kpi-sub" id="kpi-revenue-sub">загрузка...</div>
         </div>
         <div class="kpi-card red">
-          <div class="kpi-label">Расходы (нал)</div>
+          <div class="kpi-label">Расходы со счёта</div>
           <div class="kpi-value red" id="kpi-expense">—</div>
-          <div class="kpi-sub" id="kpi-expense-sub">загрузка...</div>
+          <div class="kpi-sub" id="kpi-expense-sub">за текущий месяц</div>
         </div>
         <div class="kpi-card acc">
           <div class="kpi-label">Чистая прибыль</div>
@@ -761,25 +761,33 @@ function toast(msg, type = 'success') {
 // ═══ DASHBOARD ══════════════════════════════════════════════════════════
 async function loadDashboard() {
   const data = await api('GET', `/api/stats`);
-  if (!data) return;
+  if (!data || data.error) return;
 
   const b = data.balance || {};
   const rev = b.revenue || 0;
-  const exp = b.expense || 0;
-  const net = b.net || 0;
+  const net = b.net     || 0;
 
   document.getElementById('kpi-revenue').textContent = fmt(rev);
-  document.getElementById('kpi-expense').textContent = fmt(exp);
   document.getElementById('kpi-net').textContent     = fmt(net);
   document.getElementById('kpi-net').className       = `kpi-value ${net >= 0 ? 'green' : 'red'}`;
 
-  // Recent entries for avg
-  const entries = await api('GET', `/api/daily?month=${getM()}&year=${getY()}`);
-  const days    = entries?.length || 0;
-  const avg     = days > 0 ? rev / days : 0;
-  document.getElementById('kpi-avg').textContent  = fmt(avg);
-  document.getElementById('kpi-avg-sub').textContent = `${days} дней с данными`;
-  document.getElementById('kpi-revenue-sub').textContent = `${days} дней`;
+  // Подгружаем расходы со счёта за выбранный месяц
+  const [entries, expenses] = await Promise.all([
+    api('GET', `/api/daily?month=${getM()}&year=${getY()}`),
+    api('GET', `/api/expenses?month=${getM()}&year=${getY()}`)
+  ]);
+
+  // Расходы со счёта (account_expenses) — именно это пользователь добавлял
+  const accExpTotal = (expenses || []).reduce((s, e) => s + e.amount, 0);
+  const accExpCount = (expenses || []).length;
+  document.getElementById('kpi-expense').textContent     = fmt(accExpTotal);
+  document.getElementById('kpi-expense-sub').textContent = `${accExpCount} операций`;
+
+  const days = (entries || []).length;
+  const avg  = days > 0 ? rev / days : 0;
+  document.getElementById('kpi-avg').textContent          = fmt(avg);
+  document.getElementById('kpi-avg-sub').textContent      = `${days} дней с данными`;
+  document.getElementById('kpi-revenue-sub').textContent  = `${days} дней`;
 
   // Incas
   if (entries) {
