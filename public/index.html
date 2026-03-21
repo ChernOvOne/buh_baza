@@ -732,13 +732,23 @@ const getY = () => document.getElementById('yearSel').value;
 const fmt  = v => (v||0).toLocaleString('ru',{minimumFractionDigits:2}) + ' ₽';
 
 async function api(method, url, body) {
-  const r = await fetch(url, {
-    method,
-    headers: body ? {'Content-Type':'application/json'} : {},
-    body: body ? JSON.stringify(body) : undefined,
-  });
-  if (r.status === 401) { window.location.href='/login'; return null; }
-  return r.json();
+  try {
+    const r = await fetch(url, {
+      method,
+      credentials: 'include',                                   // ← отправляем cookie с JWT
+      headers: body ? {'Content-Type':'application/json'} : {},
+      body: body ? JSON.stringify(body) : undefined,
+    });
+    if (r.status === 401) { window.location.href = '/login'; return null; }
+    if (!r.ok) {
+      const err = await r.json().catch(() => ({ error: `HTTP ${r.status}` }));
+      return { error: err.error || `HTTP ${r.status}` };
+    }
+    return r.json();
+  } catch (e) {
+    console.error('API error:', e);
+    return { error: 'Нет соединения с сервером' };
+  }
 }
 
 function toast(msg, type = 'success') {
