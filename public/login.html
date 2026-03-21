@@ -219,15 +219,19 @@
   </div>
 
   <h1>Вход в систему</h1>
-  <p class="subtitle">Введи пароль для доступа к панели</p>
+  <p class="subtitle">Используй логин <b style="color:var(--acc)">admin</b> и пароль из .env</p>
 
   <form id="loginForm">
     <div class="field">
-      <label>Пароль доступа</label>
-      <input type="password" id="password" placeholder="••••••••••••" autofocus autocomplete="current-password">
+      <label>Логин</label>
+      <input type="text" id="username" placeholder="admin" autofocus autocomplete="username" value="admin">
     </div>
-    <button type="submit" class="btn" id="submitBtn">Войти →</button>
-    <div class="error-msg" id="errorMsg">Неверный пароль. Попробуй ещё раз.</div>
+    <div class="field" style="margin-top:14px">
+      <label>Пароль</label>
+      <input type="password" id="password" placeholder="••••••••••••" autocomplete="current-password">
+    </div>
+    <button type="submit" class="btn" id="submitBtn" style="margin-top:20px">Войти →</button>
+    <div class="error-msg" id="errorMsg">Неверный логин или пароль.</div>
   </form>
 
   <div class="footer">
@@ -241,7 +245,14 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
   e.preventDefault();
   const btn = document.getElementById('submitBtn');
   const err = document.getElementById('errorMsg');
-  const pwd = document.getElementById('password').value;
+  const username = document.getElementById('username').value.trim();
+  const password = document.getElementById('password').value;
+
+  if (!username || !password) {
+    err.textContent = 'Введи логин и пароль';
+    err.classList.add('show');
+    return;
+  }
 
   btn.disabled = true;
   btn.textContent = 'Проверка...';
@@ -252,17 +263,20 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
       method: 'POST',
       credentials: 'include',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ password: pwd })
+      body: JSON.stringify({ username, password })
     });
+    const data = await r.json().catch(() => ({}));
     if (r.ok) {
       btn.textContent = '✓ Успешно';
       btn.style.background = 'linear-gradient(135deg, #00ff88, #00cc66)';
-      setTimeout(() => window.location.href = '/', 600);
+      setTimeout(() => window.location.href = '/', 700);
     } else {
+      err.textContent = data.error || 'Неверный логин или пароль.';
       err.classList.add('show');
       btn.disabled = false;
       btn.textContent = 'Войти →';
       document.getElementById('password').value = '';
+      document.getElementById('password').focus();
     }
   } catch {
     err.textContent = 'Ошибка соединения с сервером';
@@ -271,6 +285,8 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
     btn.textContent = 'Войти →';
   }
 });
+// Focus password if username already filled
+document.getElementById('password').focus();
 </script>
 </body>
 </html>
