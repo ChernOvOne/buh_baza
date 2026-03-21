@@ -259,6 +259,9 @@ kbd{display:inline-block;padding:2px 6px;border:1px solid var(--b2);border-radiu
     <div class="nav-i" data-page="partners"><span class="ic">◯</span>Партнёры</div>
     <div class="nav-i" data-page="receipts"><span class="ic">▣</span>Галерея чеков</div>
     <div class="nav-i" data-page="settings"><span class="ic">⚙</span>Настройки</div>
+    <div class="nav-i" data-page="users"><span class="ic">◫</span>Пользователи</div>
+    <div class="nav-i" data-page="webhook"><span class="ic">◈</span>Webhook API</div>
+    <div class="nav-i" data-page="audit"><span class="ic">◉</span>Журнал действий</div>
     <div class="nav-i" data-page="io"><span class="ic">⇄</span>Импорт / Экспорт</div>
   </nav>
   <div class="sb-foot">
@@ -722,6 +725,177 @@ kbd{display:inline-block;padding:2px 6px;border:1px solid var(--b2);border-radiu
     </div>
   </div>
 
+
+  <!-- USERS PAGE -->
+  <div class="page" id="page-users">
+    <div class="g2">
+      <div class="panel" style="margin-bottom:0">
+        <div class="ph"><span class="ph-title">➕ Создать пользователя</span></div>
+        <div class="pb">
+          <form class="fg" id="userForm">
+            <div class="fr">
+              <div class="fi"><label>Логин *</label><input type="text" id="u-name" required placeholder="ivan"></div>
+              <div class="fi"><label>Пароль *</label><input type="password" id="u-pass" required placeholder="••••••••"></div>
+              <div class="fi"><label>Роль *</label>
+                <select id="u-role">
+                  <option value="viewer">Читатель — только просмотр</option>
+                  <option value="editor">Редактор — добавлять/удалять</option>
+                  <option value="admin">Администратор — полный доступ</option>
+                </select>
+              </div>
+            </div>
+            <div><button type="submit" class="btn-add">Создать пользователя</button></div>
+          </form>
+        </div>
+      </div>
+      <div class="panel" style="margin-bottom:0">
+        <div class="ph"><span class="ph-title">🔗 Создать invite-ссылку (TG)</span></div>
+        <div class="pb">
+          <div class="info-box">Ссылка — одноразовая. Пользователь перейдёт и войдёт через Telegram. Роль назначается заранее.</div>
+          <div class="fg">
+            <div class="fr">
+              <div class="fi"><label>Роль</label>
+                <select id="inv-role">
+                  <option value="viewer">Читатель</option>
+                  <option value="editor">Редактор</option>
+                  <option value="admin">Администратор</option>
+                </select>
+              </div>
+              <div class="fi"><label>Срок (часов)</label><input type="number" id="inv-hours" value="24" min="1" max="720"></div>
+              <div class="fi"><label>Заметка (необязательно)</label><input type="text" id="inv-note" placeholder="Для Ивана"></div>
+            </div>
+            <button class="btn-add" onclick="createInvite()">Создать ссылку</button>
+          </div>
+          <div id="invite-result" style="display:none;margin-top:14px;background:var(--s3);border:1px solid var(--b2);border-radius:8px;padding:12px"></div>
+        </div>
+      </div>
+    </div>
+    <div class="panel" style="margin-top:16px">
+      <div class="ph"><span class="ph-title">Пользователи системы</span><button class="btn-sm" onclick="loadUsers()">↺ Обновить</button></div>
+      <div class="tw"><table><thead><tr><th>ID</th><th>Логин / TG</th><th>Роль</th><th>Статус</th><th>Последний вход</th><th></th></tr></thead><tbody id="users-body"></tbody></table></div>
+    </div>
+    <div class="panel" style="margin-top:16px">
+      <div class="ph"><span class="ph-title">Активные приглашения</span></div>
+      <div class="tw"><table><thead><tr><th>Роль</th><th>Заметка</th><th>Истекает</th><th>Использовано</th><th>Ссылка</th><th></th></tr></thead><tbody id="invites-body"></tbody></table></div>
+    </div>
+  </div>
+
+  <!-- WEBHOOK PAGE -->
+  <div class="page" id="page-webhook">
+    <div class="g2">
+      <div>
+        <div class="panel" style="margin-bottom:16px">
+          <div class="ph"><span class="ph-title">🔌 Настройка Webhook</span></div>
+          <div class="pb">
+            <div class="fg">
+              <div class="fi">
+                <label>URL вашего Webhook (отправляйте сюда POST-запросы)</label>
+                <div style="display:flex;gap:8px;align-items:center">
+                  <input type="text" id="wh-url" readonly style="font-family:var(--mono);font-size:11px;color:var(--c)">
+                  <button class="btn-sm" onclick="copyWebhookUrl()">Скопировать</button>
+                </div>
+              </div>
+              <div class="fi">
+                <label>Секретный ключ (X-Webhook-Secret)</label>
+                <div style="display:flex;gap:8px">
+                  <input type="text" id="wh-secret" placeholder="Сгенерируй или введи свой" style="font-family:var(--mono);font-size:11px;flex:1">
+                  <button class="btn-sm" onclick="genSecret()">Генерировать</button>
+                </div>
+                <div style="font-size:10px;color:var(--t3);margin-top:4px">Добавь этот ключ в заголовок <code style="color:var(--c)">X-Webhook-Secret</code> своих запросов</div>
+              </div>
+              <div style="display:flex;align-items:center;gap:10px">
+                <label style="display:flex;align-items:center;gap:7px;cursor:pointer;font-size:12px">
+                  <input type="checkbox" id="wh-auto-rev" checked>
+                  Автоматически добавлять оплаты в выручку дня (только live)
+                </label>
+              </div>
+              <div style="display:flex;align-items:center;gap:10px">
+                <label style="display:flex;align-items:center;gap:7px;cursor:pointer;font-size:12px">
+                  <input type="checkbox" id="wh-notify" checked>
+                  Уведомления в TG при получении оплаты
+                </label>
+              </div>
+              <button class="btn-add" onclick="saveWebhookSettings()">Сохранить настройки</button>
+            </div>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="ph"><span class="ph-title">📊 Статистика платежей</span></div>
+          <div class="pb" id="wh-stats"></div>
+        </div>
+      </div>
+      <div>
+        <div class="panel" style="margin-bottom:16px">
+          <div class="ph"><span class="ph-title">🧪 Генератор тестового запроса</span></div>
+          <div class="pb">
+            <div class="fg">
+              <div class="fr">
+                <div class="fi"><label>Сумма ₽</label><input type="number" id="test-amount" value="1500" min="1"></div>
+                <div class="fi"><label>Имя клиента</label><input type="text" id="test-name" value="Иван Иванов"></div>
+                <div class="fi"><label>Email</label><input type="email" id="test-email" value="ivan@example.com"></div>
+              </div>
+              <div class="fr">
+                <div class="fi"><label>Продукт</label><input type="text" id="test-product" value="VPN Подписка 1 мес."></div>
+                <div class="fi"><label>Режим</label>
+                  <select id="test-mode"><option value="test">🧪 TEST (не пишется в статистику)</option><option value="live">🔴 LIVE (пишется в статистику)</option></select>
+                </div>
+              </div>
+              <div style="display:flex;gap:9px">
+                <button class="btn-add" onclick="sendTestWebhook()">▶ Отправить тест</button>
+                <button class="btn-sm" onclick="genCurlExample()">cURL пример</button>
+              </div>
+              <div id="test-result" style="display:none;margin-top:10px"></div>
+            </div>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="ph"><span class="ph-title">📋 JSON-формат запроса</span></div>
+          <div class="pb">
+            <pre id="json-example" style="background:var(--s3);border:1px solid var(--b2);border-radius:7px;padding:14px;font-family:var(--mono);font-size:11px;color:var(--t2);overflow-x:auto;line-height:1.7"></pre>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="panel" style="margin-top:4px">
+      <div class="ph">
+        <span class="ph-title">Входящие платежи</span>
+        <div style="display:flex;gap:8px">
+          <select id="wh-filter" onchange="loadPayments()" style="background:var(--s3);border:1px solid var(--b2);border-radius:6px;color:var(--t1);padding:4px 8px;font-size:11px;outline:none">
+            <option value="">Все</option><option value="live">Live</option><option value="test">Test</option>
+          </select>
+          <button class="btn-sm" onclick="loadPayments()">↺</button>
+        </div>
+      </div>
+      <div class="tw">
+        <table><thead><tr><th>Дата</th><th>Режим</th><th>Сумма</th><th>Клиент</th><th>Email</th><th>Продукт</th><th>Статус</th><th></th></tr></thead>
+        <tbody id="payments-body"></tbody></table>
+      </div>
+    </div>
+  </div>
+
+  <!-- AUDIT PAGE -->
+  <div class="page" id="page-audit">
+    <div class="panel">
+      <div class="ph">
+        <span class="ph-title">Журнал действий</span>
+        <div style="display:flex;gap:8px;align-items:center">
+          <span style="font-size:10px;color:var(--t3)" id="audit-total"></span>
+          <button class="btn-sm" onclick="loadAudit()">↺</button>
+        </div>
+      </div>
+      <div class="tw">
+        <table>
+          <thead><tr><th>Время</th><th>Пользователь</th><th>Роль</th><th>Действие</th><th>Объект</th><th>Детали</th><th>IP</th></tr></thead>
+          <tbody id="audit-body"></tbody>
+        </table>
+      </div>
+      <div style="padding:12px 16px;display:flex;gap:8px">
+        <button class="btn-sm" id="audit-more" onclick="loadMoreAudit()" style="display:none">Загрузить ещё</button>
+      </div>
+    </div>
+  </div>
+
+
   </div><!-- /content -->
   </div><!-- /scroll -->
 </div><!-- /main -->
@@ -741,7 +915,7 @@ kbd{display:inline-block;padding:2px 6px;border:1px solid var(--b2);border-radiu
 
 <script>
 const MN=['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
-const PAGES={dashboard:'Дашборд',daily:'Ежедневник',expenses:'Расходы со счёта',investments:'Инвестиции',ads:'Реклама',stats:'Статистика',heatmap:'Тепловая карта',budget:'Бюджет vs Факт',distribution:'Распределение',partners:'Партнёры',receipts:'Галерея чеков',settings:'Настройки',io:'Импорт / Экспорт'};
+const PAGES={dashboard:'Дашборд',daily:'Ежедневник',expenses:'Расходы со счёта',investments:'Инвестиции',ads:'Реклама',stats:'Статистика',heatmap:'Тепловая карта',budget:'Бюджет vs Факт',distribution:'Распределение',partners:'Партнёры',receipts:'Галерея чеков',settings:'Настройки',users:'Пользователи',webhook:'Webhook API',audit:'Журнал действий',io:'Импорт / Экспорт'};
 let curPage='dashboard', partners=[], pendingFiles={}, pendingDist=null;
 let charts={};
 
@@ -1279,7 +1453,281 @@ async function handleImport(inp){
 async function sendReport(){const r=await api('POST','/api/report/send');if(r?.ok)toast('Отчёт отправлен в TG!');else toast(r?.error||'Ошибка','error')}
 async function logout(){await api('POST','/api/auth/logout');window.location.href='/login'}
 
-init();
+
+// ══ CURRENT USER ══════════════════════════════════════════════════════════
+let currentUser = null;
+async function loadCurrentUser() {
+  const u = await api('GET','/api/auth/me');
+  if(u && !u.error) { currentUser = u; applyRoleRestrictions(); }
+}
+function applyRoleRestrictions() {
+  if(!currentUser) return;
+  const isAdmin = currentUser.role === 'admin';
+  const isEditor = currentUser.role === 'admin' || currentUser.role === 'editor';
+  // Hide admin-only nav items from non-admins
+  ['users','webhook','audit'].forEach(p => {
+    const el = document.querySelector(`[data-page="${p}"]`);
+    if(el) el.style.display = isAdmin ? '' : 'none';
+  });
+  // Hide forms from viewers
+  if(!isEditor) {
+    document.querySelectorAll('.btn-add,form').forEach(el => el.style.display='none');
+    document.querySelectorAll('.del-btn').forEach(el => el.style.display='none');
+  }
+}
+
+// ══ USERS ══════════════════════════════════════════════════════════════════
+async function loadUsers() {
+  const rows = await api('GET','/api/users');
+  if(!rows||rows.error) return;
+  const roleLabels = {admin:'Админ',editor:'Редактор',viewer:'Читатель'};
+  const roleCls    = {admin:'br',editor:'bg',viewer:'bv'};
+  document.getElementById('users-body').innerHTML = rows.map(u => {
+    const name = u.tg_name ? `${u.tg_name} <span style="color:var(--t3);font-size:10px">@${u.tg_username||''}</span>` : (u.username||'—');
+    const lastSeen = u.last_seen ? new Date(u.last_seen).toLocaleString('ru',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}) : '—';
+    return `<tr>
+      <td style="color:var(--t3)">#${u.id}</td>
+      <td>${name}</td>
+      <td><span class="badge ${roleCls[u.role]||'bb'}">${roleLabels[u.role]||u.role}</span></td>
+      <td><span class="${u.active?'badge bg':'badge br'}">${u.active?'Активен':'Откл.'}</span></td>
+      <td style="color:var(--t3);font-size:11px">${lastSeen}</td>
+      <td style="display:flex;gap:6px">
+        <button class="btn-sm" onclick="toggleUser(${u.id},${u.active?0:1})">${u.active?'Откл':'Вкл'}</button>
+        <button class="btn-sm btn-danger" onclick="delUser(${u.id},'${u.username||u.tg_name||u.id}')">✕</button>
+      </td>
+    </tr>`;
+  }).join('') || '<tr><td colspan="6" class="empty">Нет пользователей</td></tr>';
+
+  // Invites
+  const invites = await api('GET','/api/invites');
+  const siteOrigin = location.origin;
+  document.getElementById('invites-body').innerHTML = (invites||[]).map(inv => {
+    const exp = new Date(inv.expires_at) < new Date();
+    return `<tr>
+      <td><span class="badge ${roleCls[inv.role]||'bb'}">${roleLabels[inv.role]||inv.role}</span></td>
+      <td style="font-size:11px;color:var(--t3)">${inv.note||'—'}</td>
+      <td style="font-size:11px;color:${exp?'var(--cr)':'var(--t2)'}">${new Date(inv.expires_at).toLocaleString('ru',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})}</td>
+      <td>${inv.used_at?`<span style="color:var(--cg);font-size:11px">✓ ${inv.used_by_name||''}</span>`:'<span style="color:var(--t3);font-size:11px">Не использовано</span>'}</td>
+      <td style="font-size:10px;font-family:var(--mono)">
+        ${!inv.used_at&&!exp?`<a href="${siteOrigin}/invite/${inv.token}" target="_blank" style="color:var(--c)">/invite/${inv.token.slice(0,8)}...</a>`:'—'}
+      </td>
+      <td><button class="del-btn" style="opacity:1" onclick="delInvite(${inv.id})">✕</button></td>
+    </tr>`;
+  }).join('') || '<tr><td colspan="6" class="empty">Нет приглашений</td></tr>';
+}
+
+document.getElementById('userForm')?.addEventListener('submit', async ev => {
+  ev.preventDefault();
+  const r = await api('POST','/api/users',{username:document.getElementById('u-name').value,password:document.getElementById('u-pass').value,role:document.getElementById('u-role').value});
+  if(r?.ok){toast('Пользователь создан');loadUsers();ev.target.reset()}else toast(r?.error||'Ошибка','error');
+});
+
+async function createInvite() {
+  const r = await api('POST','/api/invites',{role:document.getElementById('inv-role').value,hours:+document.getElementById('inv-hours').value||24,note:document.getElementById('inv-note').value});
+  if(!r?.ok){toast(r?.error||'Ошибка','error');return}
+  const div = document.getElementById('invite-result');
+  div.style.display = 'block';
+  div.innerHTML = `<div style="font-size:11px;color:var(--t3);margin-bottom:8px">Ссылка создана — работает <b>${document.getElementById('inv-hours').value} часов</b>, одноразовая:</div>
+    <div style="display:flex;gap:8px;align-items:center">
+      <input type="text" value="${r.url}" readonly style="flex:1;font-family:var(--mono);font-size:11px;background:var(--bg);border:1px solid var(--b2);border-radius:6px;padding:7px 10px;color:var(--c);outline:none" onclick="this.select()">
+      <button class="btn-sm" onclick="navigator.clipboard.writeText('${r.url}');toast('Скопировано!')">Скопировать</button>
+    </div>`;
+  loadUsers();
+}
+
+async function toggleUser(id, active) {
+  const r = await api('PUT','/api/users/'+id,{active});
+  if(r?.ok){toast(active?'Активирован':'Деактивирован');loadUsers()}else toast(r?.error||'Ошибка','error');
+}
+async function delUser(id,name){
+  confirm2(`Удалить пользователя <b>${name}</b>?`, async function(){
+    const r=await api('DELETE','/api/users/'+id);
+    if(r?.ok){toast('Удалён');loadUsers()}else toast(r?.error||'Ошибка','error');
+  });
+}
+async function delInvite(id){
+  const r=await api('DELETE','/api/invites/'+id);
+  if(r?.ok){toast('Удалено');loadUsers()}else toast(r?.error||'Ошибка','error');
+}
+
+// ══ WEBHOOK ════════════════════════════════════════════════════════════════
+async function loadWebhook() {
+  const s = await api('GET','/api/settings');
+  const url = `${location.origin}/api/webhook/payment`;
+  document.getElementById('wh-url').value = url;
+  if(s?.webhook_secret) document.getElementById('wh-secret').value = s.webhook_secret;
+  if(s?.webhook_auto_revenue !== undefined) document.getElementById('wh-auto-rev').checked = s.webhook_auto_revenue;
+  if(s?.notify_new_payment !== undefined) document.getElementById('wh-notify').checked = s.notify_new_payment;
+  updateJsonExample();
+  loadPayments();
+  loadWebhookStats();
+}
+function updateJsonExample() {
+  const secret = document.getElementById('wh-secret')?.value || 'YOUR_SECRET';
+  const ex = {
+    payment_id: "pay_abc123xyz",
+    amount: 1500,
+    currency: "RUB",
+    customer_id: "user_42",
+    customer_name: "Иван Иванов",
+    email: "ivan@example.com",
+    product: "VPN Подписка 1 мес.",
+    status: "success",
+    mode: "live"
+  };
+  const pre = document.getElementById('json-example');
+  if(pre) pre.textContent =
+`POST /api/webhook/payment HTTP/1.1
+Content-Type: application/json
+X-Webhook-Secret: ${secret}
+
+${JSON.stringify(ex, null, 2)}`;
+}
+document.getElementById('wh-secret')?.addEventListener('input', updateJsonExample);
+
+function genSecret() {
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  const secret = Array.from(crypto.getRandomValues(new Uint8Array(32))).map(b => chars[b % chars.length]).join('');
+  document.getElementById('wh-secret').value = secret;
+  updateJsonExample();
+}
+function copyWebhookUrl() {
+  navigator.clipboard.writeText(document.getElementById('wh-url').value);
+  toast('URL скопирован!');
+}
+async function saveWebhookSettings() {
+  const r = await api('POST','/api/settings',{webhook_secret:document.getElementById('wh-secret').value,webhook_auto_revenue:document.getElementById('wh-auto-rev').checked,notify_new_payment:document.getElementById('wh-notify').checked});
+  if(r?.ok){toast('Настройки Webhook сохранены');updateJsonExample()}else toast(r?.error||'Ошибка','error');
+}
+async function sendTestWebhook() {
+  const body = {
+    payment_id: 'test_'+Date.now(),
+    amount: +document.getElementById('test-amount').value||100,
+    customer_name: document.getElementById('test-name').value,
+    email: document.getElementById('test-email').value,
+    product: document.getElementById('test-product').value,
+    mode: document.getElementById('test-mode').value,
+    status: 'success'
+  };
+  const secret = document.getElementById('wh-secret').value;
+  const headers = {'Content-Type':'application/json'};
+  if(secret) headers['X-Webhook-Secret'] = secret;
+  const res = document.getElementById('test-result');
+  res.style.display = 'block';
+  res.innerHTML = '<span class="spin"></span> Отправляю...';
+  try {
+    const r = await fetch('/api/webhook/payment',{method:'POST',credentials:'include',headers,body:JSON.stringify(body)});
+    const data = await r.json();
+    if(r.ok) {
+      res.innerHTML = `<div style="background:rgba(0,245,160,.08);border:1px solid rgba(0,245,160,.2);border-radius:7px;padding:10px;font-size:11px;color:var(--cg)">✓ Успешно! mode=${body.mode}<br><code style="color:var(--t2)">${JSON.stringify(data)}</code></div>`;
+      loadPayments();loadWebhookStats();
+    } else {
+      res.innerHTML = `<div style="background:rgba(255,48,96,.08);border:1px solid rgba(255,48,96,.2);border-radius:7px;padding:10px;font-size:11px;color:var(--cr)">✗ Ошибка: ${data.error}</div>`;
+    }
+  } catch(e) {
+    res.innerHTML = `<div style="color:var(--cr);font-size:11px">✗ ${e.message}</div>`;
+  }
+}
+async function genCurlExample() {
+  const secret = document.getElementById('wh-secret').value;
+  const url = location.origin + '/api/webhook/payment';
+  const body = {payment_id:`test_${Date.now()}`,amount:+document.getElementById('test-amount').value,customer_name:document.getElementById('test-name').value,email:document.getElementById('test-email').value,product:document.getElementById('test-product').value,mode:document.getElementById('test-mode').value,status:'success'};
+  const curl = `curl -X POST "${url}" \
+  -H "Content-Type: application/json" \
+  -H "X-Webhook-Secret: ${secret||'YOUR_SECRET'}" \
+  -d '${JSON.stringify(body)}'`;
+  const res = document.getElementById('test-result');
+  res.style.display='block';
+  res.innerHTML=`<pre style="background:var(--s3);border:1px solid var(--b2);border-radius:7px;padding:12px;font-size:10px;color:var(--t2);overflow-x:auto;white-space:pre-wrap">${curl}</pre><button class="btn-sm" style="margin-top:8px" onclick="navigator.clipboard.writeText(${JSON.stringify(curl)});toast('Скопировано!')">Скопировать</button>`;
+}
+async function loadPayments() {
+  const mode = document.getElementById('wh-filter')?.value||'';
+  const url = mode ? `/api/webhook/payments?mode=${mode}` : '/api/webhook/payments';
+  const data = await api('GET', url);
+  if(!data||data.error) return;
+  const tbody = document.getElementById('payments-body');
+  tbody.innerHTML = (data.payments||[]).map(p => `<tr>
+    <td style="font-size:11px;color:var(--t3)">${p.received_at?.slice(0,16).replace('T',' ')||'—'}</td>
+    <td><span class="badge ${p.mode==='live'?'br':'bb'}">${p.mode==='live'?'🔴 LIVE':'🧪 TEST'}</span></td>
+    <td class="tg">${fmt(p.amount)}</td>
+    <td style="font-size:11px">${p.customer_name||'—'}</td>
+    <td style="font-size:11px;color:var(--t3)">${p.customer_email||'—'}</td>
+    <td style="font-size:11px;color:var(--t2)">${p.product||'—'}</td>
+    <td><span class="badge ${p.status==='success'?'bg':'br'}">${p.status}</span></td>
+    <td><button class="del-btn" style="opacity:1" onclick="del('webhook/payments',${p.id})">✕</button></td>
+  </tr>`).join('') || '<tr><td colspan="8" class="empty">Нет платежей</td></tr>';
+}
+async function loadWebhookStats() {
+  const data = await api('GET','/api/webhook/payments');
+  if(!data||data.error) return;
+  const stats = data.stats||[];
+  const live = stats.find(s=>s.mode==='live')||{cnt:0,total:0};
+  const test = stats.find(s=>s.mode==='test')||{cnt:0,total:0};
+  const el = document.getElementById('wh-stats');
+  if(el) el.innerHTML = `<div class="g2" style="gap:10px">
+    <div style="background:var(--s3);border:1px solid rgba(255,48,96,.2);border-radius:8px;padding:14px">
+      <div style="font-size:9px;color:var(--cr);letter-spacing:2px;text-transform:uppercase;margin-bottom:8px">🔴 LIVE ПЛАТЕЖИ</div>
+      <div style="font-family:var(--display);font-size:22px;font-weight:700;color:var(--cg)">${fmt(live.total||0)}</div>
+      <div style="font-size:10px;color:var(--t3);margin-top:4px">${live.cnt||0} транзакций</div>
+    </div>
+    <div style="background:var(--s3);border:1px solid rgba(0,229,255,.15);border-radius:8px;padding:14px">
+      <div style="font-size:9px;color:var(--c);letter-spacing:2px;text-transform:uppercase;margin-bottom:8px">🧪 TEST ПЛАТЕЖИ</div>
+      <div style="font-family:var(--display);font-size:22px;font-weight:700;color:var(--c)">${fmt(test.total||0)}</div>
+      <div style="font-size:10px;color:var(--t3);margin-top:4px">${test.cnt||0} транзакций</div>
+    </div>
+  </div>`;
+}
+
+// ══ AUDIT ══════════════════════════════════════════════════════════════════
+let auditOffset = 0;
+const actionLabels = {login:'Вход',login_tg:'Вход TG',logout:'Выход',create_user:'Создан польз.',update_user:'Изм. польз.',delete_user:'Удалён польз.',create_invite:'Создан invite',upsert_daily:'Запись дня',edit_daily:'Ред. записи',delete_daily:'Удалена запись',create_expense:'Новый расход',edit_expense:'Ред. расходы',delete_expense:'Удалён расход',create_ad:'Новая реклама',delete_ad:'Удал. реклама',create_investment:'Инвестиция',delete_investment:'Удал. инвест.',send_report:'Отчёт отправлен',update_settings:'Настройки',import_json:'Импорт',export_json:'Экспорт',upload_file:'Загрузка файла',create_partner:'Новый партнёр',delete_partner:'Удалён партнёр'};
+async function loadAudit(reset=true) {
+  if(reset) auditOffset=0;
+  const data = await api('GET',`/api/audit?limit=50&offset=${auditOffset}`);
+  if(!data||data.error) return;
+  document.getElementById('audit-total').textContent = `Всего: ${data.total}`;
+  const tbody = document.getElementById('audit-body');
+  const rows = data.rows||[];
+  const html = rows.map(a => {
+    const details = a.details ? (() => { try{const d=JSON.parse(a.details);return Object.entries(d).map(([k,v])=>`${k}=${JSON.stringify(v)}`).join(', ')}catch{return a.details} })() : '';
+    const roleCls = {admin:'br',editor:'bg',viewer:'bv'};
+    const label = actionLabels[a.action]||a.action;
+    return `<tr>
+      <td style="font-size:10px;color:var(--t3);font-family:var(--mono)">${(a.created_at||'').slice(0,16).replace('T',' ')}</td>
+      <td style="font-size:11px">${a.username||a.tg_username||`#${a.user_id||'?'}`}</td>
+      <td><span class="badge ${roleCls[a.user_role]||'bb'}" style="font-size:8px">${a.user_role||'—'}</span></td>
+      <td style="font-size:11px;color:var(--t1)">${label}</td>
+      <td style="font-size:10px;color:var(--t3)">${[a.entity,a.entity_id].filter(Boolean).join(' #')}</td>
+      <td style="font-size:10px;color:var(--t3);max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${details}">${details}</td>
+      <td style="font-size:10px;font-family:var(--mono);color:var(--t3)">${a.ip||'—'}</td>
+    </tr>`;
+  }).join('') || '<tr><td colspan="7" class="empty">Нет записей</td></tr>';
+  if(reset) { tbody.innerHTML = html; }
+  else { tbody.insertAdjacentHTML('beforeend', html); }
+  document.getElementById('audit-more').style.display = rows.length === 50 ? '' : 'none';
+}
+function loadMoreAudit() { auditOffset += 50; loadAudit(false); }
+
+// ══ PATCH INIT ══════════════════════════════════════════════════════════════
+const _origInit = init;
+// Patch nav to include new pages
+const _origNav = nav;
+function nav(p) {
+  _origNav(p);
+  if(p==='users') loadUsers();
+  if(p==='webhook') loadWebhook();
+  if(p==='audit') loadAudit();
+}
+// Override loaders map after init
+const origLoadPartners = loadPartners;
+async function init2() {
+  await origLoadPartners();
+  await loadCurrentUser();
+  nav('dashboard');
+}
+
+init2();
+
 </script>
 </body>
 </html>

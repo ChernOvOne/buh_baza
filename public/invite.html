@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>BAZA — Приглашение</title>
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@700;900&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://telegram.org/js/telegram-widget.js?22" async></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#04040a;--s1:#0c0c16;--b1:#1c1c2a;--b2:#252535;--c:#00e5ff;--cv:#7c3aed;--cg:#00f5a0;--cr:#ff3060;--t1:#f0f4ff;--t2:#8892b0;--t3:#4a5068}
+body{background:var(--bg);color:var(--t1);font-family:'Inter',sans-serif;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}
+.card{background:var(--s1);border:1px solid var(--b1);border-radius:16px;padding:40px;max-width:420px;width:100%;text-align:center;box-shadow:0 40px 80px rgba(0,0,0,.6)}
+.logo{font-family:'Unbounded',sans-serif;font-size:28px;font-weight:900;background:linear-gradient(135deg,var(--c),var(--cv));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:6px}
+.logo-sub{font-size:10px;color:var(--t3);letter-spacing:3px;text-transform:uppercase;margin-bottom:32px}
+.invite-box{background:var(--bg);border:1px solid var(--b2);border-radius:10px;padding:20px;margin-bottom:28px}
+.invite-role{display:inline-block;padding:4px 12px;border-radius:6px;font-size:12px;font-weight:600;margin-bottom:10px}
+.invite-role.admin{background:rgba(0,229,255,.1);color:var(--c);border:1px solid rgba(0,229,255,.2)}
+.invite-role.editor{background:rgba(0,245,160,.1);color:var(--cg);border:1px solid rgba(0,245,160,.2)}
+.invite-role.viewer{background:rgba(139,92,246,.1);color:#a78bfa;border:1px solid rgba(139,92,246,.2)}
+.invite-title{font-size:16px;font-weight:600;margin-bottom:6px}
+.invite-desc{font-size:12px;color:var(--t3);line-height:1.6}
+h2{font-size:20px;font-weight:700;margin-bottom:8px}
+p{font-size:13px;color:var(--t2);margin-bottom:24px;line-height:1.6}
+.tg-login-wrap{display:flex;justify-content:center;margin-bottom:16px}
+.err{background:rgba(255,48,96,.1);border:1px solid rgba(255,48,96,.2);border-radius:8px;padding:12px;font-size:12px;color:var(--cr);margin-top:16px;display:none}
+.success{background:rgba(0,245,160,.1);border:1px solid rgba(0,245,160,.2);border-radius:8px;padding:16px;font-size:13px;color:var(--cg);margin-top:16px;display:none}
+.loader{display:none;color:var(--t2);font-size:12px;margin-top:12px}
+.role-desc{font-size:11px;color:var(--t3);margin-top:8px}
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="logo">BAZA</div>
+  <div class="logo-sub">VPN Finance</div>
+
+  <div class="invite-box" id="invite-info">
+    <div style="color:var(--t3);font-size:12px">Загрузка...</div>
+  </div>
+
+  <h2>Войти через Telegram</h2>
+  <p>Нажми кнопку ниже и авторизуйся через Telegram. После этого у тебя будет доступ к системе согласно роли из приглашения.</p>
+
+  <div class="tg-login-wrap" id="tg-btn-wrap"></div>
+  <div class="loader" id="loader">⏳ Применяю приглашение...</div>
+  <div class="err" id="err"></div>
+  <div class="success" id="success">✓ Готово! Перенаправляю...</div>
+</div>
+
+<script>
+const token = location.pathname.split('/invite/')[1];
+const roleLabels = { admin:'Администратор', editor:'Редактор', viewer:'Читатель' };
+
+async function checkInvite() {
+  const r = await fetch('/api/invites/check/'+token);
+  const data = await r.json();
+  const box = document.getElementById('invite-info');
+  if (!r.ok) {
+    box.innerHTML = `<div style="color:var(--cr);font-size:13px">⚠ ${data.error||'Ошибка'}</div>`;
+    document.getElementById('tg-btn-wrap').style.display = 'none';
+    return;
+  }
+  const roleCls = data.role || 'viewer';
+  box.innerHTML = `
+    <div class="invite-role ${roleCls}">${roleLabels[roleCls]||roleCls}</div>
+    <div class="invite-title">Приглашение в BAZA</div>
+    <div class="invite-desc">${data.note||'Вам предоставлен доступ к финансовой панели'}</div>
+    <div class="role-desc">Роль: <b style="color:var(--t1)">${roleLabels[roleCls]||roleCls}</b></div>`;
+  
+  // Load TG widget
+  const botName = await getBotName();
+  if (!botName) {
+    document.getElementById('tg-btn-wrap').innerHTML = '<div style="color:var(--cr);font-size:12px">Бот не настроен. Обратитесь к администратору.</div>';
+    return;
+  }
+  const script = document.createElement('script');
+  script.src = 'https://telegram.org/js/telegram-widget.js?22';
+  script.setAttribute('data-telegram-login', botName);
+  script.setAttribute('data-size', 'large');
+  script.setAttribute('data-radius', '8');
+  script.setAttribute('data-onauth', 'onTgAuth(user)');
+  script.setAttribute('data-request-access', 'write');
+  script.async = true;
+  document.getElementById('tg-btn-wrap').appendChild(script);
+}
+
+async function getBotName() {
+  try {
+    const s = await fetch('/api/settings'); const d = await s.json();
+    const tok = d.tg_bot_token;
+    if (!tok) return null;
+    const r = await fetch(`https://api.telegram.org/bot${tok}/getMe`);
+    const data = await r.json();
+    return data.ok ? data.result.username : null;
+  } catch { return null; }
+}
+
+async function onTgAuth(user) {
+  document.getElementById('loader').style.display = 'block';
+  document.getElementById('err').style.display = 'none';
+  try {
+    const r = await fetch('/api/invites/use/'+token, {
+      method: 'POST',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ tg_id: String(user.id), tg_username: user.username, tg_name: [user.first_name,user.last_name].filter(Boolean).join(' '), tg_avatar: user.photo_url, ...user })
+    });
+    const data = await r.json();
+    if (r.ok) {
+      document.getElementById('success').style.display = 'block';
+      document.getElementById('loader').style.display = 'none';
+      setTimeout(() => { window.location.href = '/'; }, 1200);
+    } else {
+      throw new Error(data.error||'Ошибка');
+    }
+  } catch(e) {
+    document.getElementById('loader').style.display = 'none';
+    const err = document.getElementById('err');
+    err.textContent = '✗ ' + e.message;
+    err.style.display = 'block';
+  }
+}
+
+checkInvite();
+</script>
+</body>
+</html>
