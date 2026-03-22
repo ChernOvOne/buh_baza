@@ -1013,7 +1013,11 @@ function init(){
   document.getElementById('budgetForm').addEventListener('submit',submitBudget);
   setupDrag('e-drop','e-file');setupDrag('a-drop','a-file');setupDrag('r-drop','r-file');setupDrag('imp-drop','imp-file');
   setInterval(()=>{document.getElementById('clk').textContent=new Date().toLocaleTimeString('ru',{hour:'2-digit',minute:'2-digit',second:'2-digit'})},1000);
-  loadPartners().then(()=>nav('dashboard'));
+  // Загружаем партнёров, потом роль, потом открываем дашборд
+  loadPartners().then(async () => {
+    await loadCurrentUser();
+    nav('dashboard');
+  });
 }
 
 const gM=()=>document.getElementById('mSel').value;
@@ -1029,7 +1033,14 @@ function nav(p){
   const pg=document.getElementById('page-'+p);if(pg)pg.classList.add('on');
   const ni=document.querySelector('[data-page="'+p+'"]');if(ni)ni.classList.add('on');
   document.getElementById('pageTitle').textContent=PAGES[p]||p;
-  ({dashboard:loadDashboard,daily:loadDaily,expenses:loadExpenses,investments:loadInvestments,ads:loadAds,stats:loadStats,heatmap:loadHeatmap,budget:loadBudget,distribution:loadDist,partners:renderPartners,receipts:loadReceipts,settings:loadSettings,io:()=>{}})[p]?.();
+  ({
+    dashboard:loadDashboard, daily:loadDaily, expenses:loadExpenses,
+    investments:loadInvestments, ads:loadAds, stats:loadStats,
+    heatmap:loadHeatmap, budget:loadBudget, distribution:loadDist,
+    partners:renderPartners, receipts:loadReceipts, settings:loadSettings,
+    users:loadUsers, webhook:loadWebhook, audit:loadAudit,
+    io:()=>{}
+  })[p]?.();
 }
 function onMC(){nav(curPage)}
 
@@ -1708,25 +1719,8 @@ async function loadAudit(reset=true) {
 }
 function loadMoreAudit() { auditOffset += 50; loadAudit(false); }
 
-// ══ PATCH INIT ══════════════════════════════════════════════════════════════
-const _origInit = init;
-// Patch nav to include new pages
-const _origNav = nav;
-function nav(p) {
-  _origNav(p);
-  if(p==='users') loadUsers();
-  if(p==='webhook') loadWebhook();
-  if(p==='audit') loadAudit();
-}
-// Override loaders map after init
-const origLoadPartners = loadPartners;
-async function init2() {
-  await origLoadPartners();
-  await loadCurrentUser();
-  nav('dashboard');
-}
-
-init2();
+// Запускаем приложение
+init();
 
 </script>
 </body>
