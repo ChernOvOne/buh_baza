@@ -42,32 +42,43 @@ const qs = (m,y) => (m&&y) ? `${y}-${String(m).padStart(2,'0')}` : null;
 // ── AUTH ──────────────────────────────────────────────────────────────────
 router.post('/auth/login', async (req, res) => {
   const { username, password } = req.body;
-  
-  // Legacy admin password (env-based, backwards compat)
+  if (!username || !password) return res.status(400).json({ error: 'Введи логин и пароль' });
+
+  // ── Admin через ADMIN_PASSWORD из .env ──────────────────────────────────
   if (username === 'admin' && process.env.ADMIN_PASSWORD) {
-    const valid = await bcrypt.compare(password, process.env.ADMIN_HASH || '');
-    if (valid) {
+    // Прямое сравнение паролей — без зависимости от ADMIN_HASH
+    const validDirect = (password === process.env.ADMIN_PASSWORD);
+    // Дополнительно пробуем bcrypt если хэш уже готов
+    let validHash = false;
+    if (process.env.ADMIN_HASH) {
+      try { validHash = await bcrypt.compare(password, process.env.ADMIN_HASH); } catch {}
+    }
+    if (validDirect || validHash) {
+      // Создаём/обновляем запись admin в БД
       let user = db.prepare("SELECT * FROM users WHERE username='admin'").get();
       if (!user) {
-        const hash = await bcrypt.hash(password, 10);
-        db.prepare("INSERT OR IGNORE INTO users (username,password,role) VALUES ('admin',?,'admin')").run(hash);
+        const hash = await bcrypt.hash(process.env.ADMIN_PASSWORD, 10);
+        db.prepare("INSERT OR IGNORE INTO users (username,password,role,active) VALUES ('admin',?,'admin',1)").run(hash);
         user = db.prepare("SELECT * FROM users WHERE username='admin'").get();
       }
+      if (!user) return res.status(500).json({ error: 'Ошибка создания пользователя' });
       const token = jwt.sign({ user_id: user.id, role: 'admin' }, process.env.JWT_SECRET, { expiresIn: '30d' });
-      res.cookie('token', token, { httpOnly:true, maxAge:30*24*3600*1000, sameSite:'lax' });
-      audit(req,'login','user',user.id,{username:'admin'});
-      return res.json({ ok:true, role:'admin', username:'admin' });
+      res.cookie('token', token, { httpOnly: true, maxAge: 30*24*3600*1000, sameSite: 'lax' });
+      try { audit(req, 'login', 'user', user.id, { username: 'admin' }); } catch {}
+      return res.json({ ok: true, role: 'admin', username: 'admin' });
     }
+    // Если username=admin но пароль неверный — сразу возвращаем ошибку
+    return res.status(401).json({ error: 'Неверный пароль' });
   }
 
-  // DB user login
+  // ── Обычный пользователь из БД ───────────────────────────────────────────
   const user = db.prepare('SELECT * FROM users WHERE username=? AND active=1').get(username);
-  if (!user || !user.password) return res.status(401).json({ error: 'Неверные данные' });
+  if (!user || !user.password) return res.status(401).json({ error: 'Пользователь не найден' });
   const valid = await bcrypt.compare(password, user.password);
   if (!valid) return res.status(401).json({ error: 'Неверный пароль' });
   const token = jwt.sign({ user_id: user.id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '30d' });
-  res.cookie('token', token, { httpOnly:true, maxAge:30*24*3600*1000, sameSite:'lax' });
-  audit(req,'login','user',user.id,{username:user.username});
+  res.cookie('token', token, { httpOnly: true, maxAge: 30*24*3600*1000, sameSite: 'lax' });
+  try { audit(req, 'login', 'user', user.id, { username: user.username }); } catch {}
   res.json({ ok:true, role:user.role, username:user.username });
 });
 
