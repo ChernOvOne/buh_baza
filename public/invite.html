@@ -4,29 +4,36 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>BAZA — Приглашение</title>
-<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@700;900&family=Inter:wght@400;500&display=swap" rel="stylesheet">
-<script src="https://telegram.org/js/telegram-widget.js?22" async></script>
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@700;900&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 :root{--bg:#04040a;--s1:#0c0c16;--b1:#1c1c2a;--b2:#252535;--c:#00e5ff;--cv:#7c3aed;--cg:#00f5a0;--cr:#ff3060;--t1:#f0f4ff;--t2:#8892b0;--t3:#4a5068}
 body{background:var(--bg);color:var(--t1);font-family:'Inter',sans-serif;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}
-.card{background:var(--s1);border:1px solid var(--b1);border-radius:16px;padding:40px;max-width:420px;width:100%;text-align:center;box-shadow:0 40px 80px rgba(0,0,0,.6)}
-.logo{font-family:'Unbounded',sans-serif;font-size:28px;font-weight:900;background:linear-gradient(135deg,var(--c),var(--cv));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:6px}
-.logo-sub{font-size:10px;color:var(--t3);letter-spacing:3px;text-transform:uppercase;margin-bottom:32px}
-.invite-box{background:var(--bg);border:1px solid var(--b2);border-radius:10px;padding:20px;margin-bottom:28px}
-.invite-role{display:inline-block;padding:4px 12px;border-radius:6px;font-size:12px;font-weight:600;margin-bottom:10px}
-.invite-role.admin{background:rgba(0,229,255,.1);color:var(--c);border:1px solid rgba(0,229,255,.2)}
-.invite-role.editor{background:rgba(0,245,160,.1);color:var(--cg);border:1px solid rgba(0,245,160,.2)}
-.invite-role.viewer{background:rgba(139,92,246,.1);color:#a78bfa;border:1px solid rgba(139,92,246,.2)}
-.invite-title{font-size:16px;font-weight:600;margin-bottom:6px}
-.invite-desc{font-size:12px;color:var(--t3);line-height:1.6}
-h2{font-size:20px;font-weight:700;margin-bottom:8px}
-p{font-size:13px;color:var(--t2);margin-bottom:24px;line-height:1.6}
-.tg-login-wrap{display:flex;justify-content:center;margin-bottom:16px}
-.err{background:rgba(255,48,96,.1);border:1px solid rgba(255,48,96,.2);border-radius:8px;padding:12px;font-size:12px;color:var(--cr);margin-top:16px;display:none}
-.success{background:rgba(0,245,160,.1);border:1px solid rgba(0,245,160,.2);border-radius:8px;padding:16px;font-size:13px;color:var(--cg);margin-top:16px;display:none}
-.loader{display:none;color:var(--t2);font-size:12px;margin-top:12px}
-.role-desc{font-size:11px;color:var(--t3);margin-top:8px}
+body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(0,229,255,.025) 1px,transparent 1px),linear-gradient(90deg,rgba(0,229,255,.025) 1px,transparent 1px);background-size:44px 44px;animation:gm 24s linear infinite;pointer-events:none}
+@keyframes gm{to{transform:translateY(44px)}}
+.card{position:relative;z-index:1;background:var(--s1);border:1px solid var(--b1);border-radius:18px;padding:36px 30px;max-width:400px;width:100%;text-align:center;box-shadow:0 40px 80px rgba(0,0,0,.6)}
+.logo{font-family:'Unbounded',sans-serif;font-size:26px;font-weight:900;background:linear-gradient(135deg,var(--c),var(--cv));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:4px}
+.logo-sub{font-size:9px;color:var(--t3);letter-spacing:3px;text-transform:uppercase;margin-bottom:28px}
+.inv-box{background:var(--bg);border:1px solid var(--b2);border-radius:10px;padding:18px;margin-bottom:24px;text-align:left}
+.badge{display:inline-block;padding:3px 10px;border-radius:5px;font-size:10px;font-weight:700;letter-spacing:.5px;margin-bottom:8px}
+.badge.admin{background:rgba(255,48,96,.1);color:var(--cr);border:1px solid rgba(255,48,96,.2)}
+.badge.editor{background:rgba(0,245,160,.1);color:var(--cg);border:1px solid rgba(0,245,160,.2)}
+.badge.viewer{background:rgba(0,229,255,.1);color:var(--c);border:1px solid rgba(0,229,255,.2)}
+.inv-title{font-size:15px;font-weight:600;margin-bottom:5px}
+.inv-note{font-size:12px;color:var(--t2);line-height:1.5}
+h2{font-size:17px;font-weight:700;margin-bottom:8px}
+p{font-size:12px;color:var(--t2);margin-bottom:20px;line-height:1.65}
+.steps{text-align:left;background:var(--bg);border:1px solid var(--b2);border-radius:10px;padding:14px;margin-bottom:20px}
+.step{display:flex;align-items:flex-start;gap:10px;margin-bottom:9px;font-size:12px;color:var(--t2)}
+.step:last-child{margin-bottom:0}
+.step-n{width:20px;height:20px;border-radius:50%;background:rgba(0,229,255,.1);color:var(--c);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0;margin-top:1px}
+.btn-tg{display:flex;align-items:center;justify-content:center;gap:9px;width:100%;padding:13px;background:linear-gradient(135deg,#0088cc,#006aaa);border:none;border-radius:9px;color:#fff;font-family:'Unbounded',sans-serif;font-size:12px;font-weight:700;cursor:pointer;text-decoration:none;transition:opacity .15s;margin-bottom:10px}
+.btn-tg:hover{opacity:.88}
+.btn-web{display:flex;align-items:center;justify-content:center;gap:7px;width:100%;padding:11px;background:transparent;border:1px solid var(--b2);border-radius:9px;color:var(--t2);font-size:12px;cursor:pointer;text-decoration:none;transition:all .15s}
+.btn-web:hover{border-color:var(--c);color:var(--c)}
+.err{background:rgba(255,48,96,.08);border:1px solid rgba(255,48,96,.2);border-radius:8px;padding:12px;font-size:12px;color:var(--cr);margin-top:12px;display:none;text-align:left}
+.code-block{background:var(--bg);border:1px solid var(--b2);border-radius:7px;padding:10px 12px;font-family:monospace;font-size:11px;color:var(--c);word-break:break-all;margin:8px 0;text-align:left;cursor:pointer;transition:border-color .12s}
+.code-block:hover{border-color:var(--c)}
 </style>
 </head>
 <body>
@@ -34,94 +41,115 @@ p{font-size:13px;color:var(--t2);margin-bottom:24px;line-height:1.6}
   <div class="logo">BAZA</div>
   <div class="logo-sub">VPN Finance</div>
 
-  <div class="invite-box" id="invite-info">
-    <div style="color:var(--t3);font-size:12px">Загрузка...</div>
+  <div class="inv-box" id="inv-info">
+    <div style="color:var(--t3);font-size:12px;text-align:center">⏳ Проверяю приглашение...</div>
   </div>
 
-  <h2>Войти через Telegram</h2>
-  <p>Нажми кнопку ниже и авторизуйся через Telegram. После этого у тебя будет доступ к системе согласно роли из приглашения.</p>
+  <div id="main-content" style="display:none">
+    <h2>Получить доступ</h2>
+    <p>Выбери способ входа. Через Telegram — быстрее, через сайт — если нет аккаунта.</p>
 
-  <div class="tg-login-wrap" id="tg-btn-wrap"></div>
-  <div class="loader" id="loader">⏳ Применяю приглашение...</div>
-  <div class="err" id="err"></div>
-  <div class="success" id="success">✓ Готово! Перенаправляю...</div>
+    <div class="steps" id="tg-steps" style="display:none">
+      <div class="step"><div class="step-n">1</div><span>Нажми кнопку ниже — откроется Telegram</span></div>
+      <div class="step"><div class="step-n">2</div><span>Нажми <b style="color:var(--t1)">ЗАПУСТИТЬ / START</b> в боте</span></div>
+      <div class="step"><div class="step-n">3</div><span>Бот сообщит что доступ предоставлен и пришлёт ссылку на сайт</span></div>
+    </div>
+
+    <a id="btn-tg" href="#" class="btn-tg" style="display:none">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.562 8.248l-2.04 9.607c-.149.665-.546.826-1.105.514l-3.068-2.261-1.48 1.423c-.164.164-.3.3-.615.3l.218-3.106 5.638-5.09c.245-.218-.054-.34-.38-.122L7.08 14.4 4.05 13.46c-.659-.207-.672-.66.137-.976l10.883-4.196c.549-.2 1.03.134.492.96z"/></svg>
+      Открыть Telegram
+    </a>
+
+    <div id="no-bot-msg" style="display:none;margin-bottom:12px">
+      <div style="font-size:11px;color:var(--t3);margin-bottom:8px">Бот не настроен. Скопируй ссылку и вставь в TG вручную:</div>
+      <div class="code-block" id="manual-link" onclick="copyManual()">...</div>
+      <div style="font-size:10px;color:var(--t3);margin-top:4px">Нажми чтобы скопировать</div>
+    </div>
+
+    <a id="btn-web" href="#" class="btn-web">
+      🌐 Вход через браузер (логин/пароль)
+    </a>
+  </div>
+
+  <div class="err" id="err-block"></div>
 </div>
 
 <script>
 const token = location.pathname.split('/invite/')[1];
-const roleLabels = { admin:'Администратор', editor:'Редактор', viewer:'Читатель' };
+const roleLabels = { admin: 'Администратор', editor: 'Редактор', viewer: 'Читатель' };
+let inviteData = null;
 
-async function checkInvite() {
-  const r = await fetch('/api/invites/check/'+token);
-  const data = await r.json();
-  const box = document.getElementById('invite-info');
-  if (!r.ok) {
-    box.innerHTML = `<div style="color:var(--cr);font-size:13px">⚠ ${data.error||'Ошибка'}</div>`;
-    document.getElementById('tg-btn-wrap').style.display = 'none';
-    return;
-  }
-  const roleCls = data.role || 'viewer';
-  box.innerHTML = `
-    <div class="invite-role ${roleCls}">${roleLabels[roleCls]||roleCls}</div>
-    <div class="invite-title">Приглашение в BAZA</div>
-    <div class="invite-desc">${data.note||'Вам предоставлен доступ к финансовой панели'}</div>
-    <div class="role-desc">Роль: <b style="color:var(--t1)">${roleLabels[roleCls]||roleCls}</b></div>`;
-  
-  // Load TG widget
-  const botName = await getBotName();
-  if (!botName) {
-    document.getElementById('tg-btn-wrap').innerHTML = '<div style="color:var(--cr);font-size:12px">Бот не настроен. Обратитесь к администратору.</div>';
-    return;
-  }
-  const script = document.createElement('script');
-  script.src = 'https://telegram.org/js/telegram-widget.js?22';
-  script.setAttribute('data-telegram-login', botName);
-  script.setAttribute('data-size', 'large');
-  script.setAttribute('data-radius', '8');
-  script.setAttribute('data-onauth', 'onTgAuth(user)');
-  script.setAttribute('data-request-access', 'write');
-  script.async = true;
-  document.getElementById('tg-btn-wrap').appendChild(script);
-}
-
-async function getBotName() {
+async function loadInvite() {
   try {
-    const s = await fetch('/api/settings'); const d = await s.json();
-    const tok = d.tg_bot_token;
-    if (!tok) return null;
-    const r = await fetch(`https://api.telegram.org/bot${tok}/getMe`);
+    const r = await fetch('/api/invites/check/' + token);
     const data = await r.json();
-    return data.ok ? data.result.username : null;
-  } catch { return null; }
-}
+    const box = document.getElementById('inv-info');
 
-async function onTgAuth(user) {
-  document.getElementById('loader').style.display = 'block';
-  document.getElementById('err').style.display = 'none';
-  try {
-    const r = await fetch('/api/invites/use/'+token, {
-      method: 'POST',
-      credentials: 'include',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ tg_id: String(user.id), tg_username: user.username, tg_name: [user.first_name,user.last_name].filter(Boolean).join(' '), tg_avatar: user.photo_url, ...user })
-    });
-    const data = await r.json();
-    if (r.ok) {
-      document.getElementById('success').style.display = 'block';
-      document.getElementById('loader').style.display = 'none';
-      setTimeout(() => { window.location.href = '/'; }, 1200);
-    } else {
-      throw new Error(data.error||'Ошибка');
+    if (!r.ok) {
+      box.innerHTML = `<div style="color:var(--cr);font-size:13px;text-align:center">⚠ ${data.error || 'Ошибка'}</div>`;
+      return;
     }
+
+    inviteData = data;
+    const roleCls = data.role || 'viewer';
+    box.innerHTML = `
+      <span class="badge ${roleCls}">${roleLabels[roleCls] || roleCls}</span>
+      <div class="inv-title">Приглашение в BAZA VPN Finance</div>
+      <div class="inv-note">${data.note || 'Вам предоставлен доступ к финансовой панели'}</div>`;
+
+    document.getElementById('main-content').style.display = 'block';
+    document.getElementById('btn-web').href = '/login';
+
+    // Try to get bot name for deeplink
+    await setupTgButton();
   } catch(e) {
-    document.getElementById('loader').style.display = 'none';
-    const err = document.getElementById('err');
-    err.textContent = '✗ ' + e.message;
-    err.style.display = 'block';
+    document.getElementById('inv-info').innerHTML = `<div style="color:var(--cr);font-size:12px;text-align:center">✗ Ошибка загрузки: ${e.message}</div>`;
   }
 }
 
-checkInvite();
+async function setupTgButton() {
+  try {
+    // Public endpoint — только имя бота, без токена
+    const s = await fetch('/api/bot-info');
+    if (!s.ok) { showManualMode(); return; }
+    const info = await s.json();
+    if (!info.ok || !info.username) { showManualMode(); return; }
+
+    const botName = info.username;
+    const deepLink = `https://t.me/${botName}?start=inv_${token}`;
+
+    document.getElementById('tg-steps').style.display = 'block';
+    const btn = document.getElementById('btn-tg');
+    btn.href = deepLink;
+    btn.style.display = 'flex';
+  } catch(e) {
+    showManualMode();
+  }
+}
+
+function showManualMode() {
+  // Show manual link — user copies and pastes in TG search
+  document.getElementById('no-bot-msg').style.display = 'block';
+  const siteUrl = location.origin;
+  const link = `${siteUrl}/invite/${token}`;
+  document.getElementById('manual-link').textContent = link;
+
+  // Still show steps but adapted
+  document.getElementById('tg-steps').innerHTML = `
+    <div class="step"><div class="step-n">1</div><span>Скопируй ссылку выше</span></div>
+    <div class="step"><div class="step-n">2</div><span>Или войди через <b style="color:var(--t1)">логин/пароль</b> ниже если он у тебя есть</span></div>`;
+  document.getElementById('tg-steps').style.display = 'block';
+}
+
+function copyManual() {
+  const link = document.getElementById('manual-link').textContent;
+  navigator.clipboard.writeText(link).then(() => {
+    document.getElementById('manual-link').textContent = '✓ Скопировано!';
+    setTimeout(() => document.getElementById('manual-link').textContent = link, 1800);
+  });
+}
+
+loadInvite();
 </script>
 </body>
 </html>

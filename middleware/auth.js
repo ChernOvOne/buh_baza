@@ -1,15 +1,26 @@
 const jwt = require('jsonwebtoken');
 const db  = require('../database/db');
 
-const ROLES = { viewer: 0, editor: 1, admin: 2 };
-
+const ROLES = { none: -1, viewer: 0, editor: 1, admin: 2 };
 function hasRole(userRole, minRole) {
-  return (ROLES[userRole] || 0) >= (ROLES[minRole] || 0);
+  return (ROLES[userRole] ?? 0) >= (ROLES[minRole] ?? 0);
+}
+
+function getCookieOpts() {
+  const isHttps = process.env.COOKIE_SECURE === 'true'
+    || process.env.NODE_ENV === 'production'
+    || (process.env.SITE_URL || '').startsWith('https');
+  return {
+    httpOnly: true,
+    maxAge: 30 * 24 * 3600 * 1000,
+    sameSite: isHttps ? 'none' : 'lax',
+    secure: isHttps,
+    path: '/',
+  };
 }
 
 function authMiddleware(req, res, next, minRole = null) {
-  const token = req.cookies?.token
-    || req.headers['authorization']?.replace('Bearer ', '');
+  const token = req.cookies?.token || req.headers['authorization']?.replace('Bearer ', '');
 
   if (!token) {
     if (req.path.startsWith('/api/')) return res.status(401).json({ error: 'Не авторизован' });
@@ -18,53 +29,38 @@ function authMiddleware(req, res, next, minRole = null) {
 
   let decoded;
   try {
-    decoded = jwt.verify(token, process.env.JWT_SECRET || 'fallback_secret_change_me');
-  } catch (e) {
-    // Токен протух или неверный
+    decoded = jwt.verify(token, process.env.JWT_SECRET || 'dev_secret_change_me');
+  } catch {
     res.clearCookie('token');
     if (req.path.startsWith('/api/')) return res.status(401).json({ error: 'Токен недействителен' });
     return res.redirect('/login');
   }
 
-  // Если в токене есть user_id — проверяем в БД
-  if (decoded.user_id) {
-    let user;
-    try {
-      user = db.prepare('SELECT id,role,username,tg_username,active FROM users WHERE id=?').get(decoded.user_id);
-    } catch (e) {
-      console.error('Auth DB error:', e.message);
-    }
-
-    if (!user || !user.active) {
+  if (decoded.partner_id) {
+    let partner;
+    try { partner = db.prepare('SELECT id,name,access_role,active FROM partners WHERE id=?').get(decoded.partner_id); } catch {}
+    if (!partner || !partner.active) {
       res.clearCookie('token');
-      if (req.path.startsWith('/api/')) return res.status(401).json({ error: 'Пользователь не найден' });
+      if (req.path.startsWith('/api/')) return res.status(401).json({ error: 'Аккаунт не найден' });
       return res.redirect('/login');
     }
-
-    req.user = {
-      id:       user.id,
-      role:     user.role,
-      username: user.username || user.tg_username || 'user_' + user.id,
-    };
-
-    // Обновляем last_seen асинхронно, не блокируя запрос
+    req.user = { id: partner.id, role: partner.access_role, name: partner.name };
     setImmediate(() => {
-      try {
-        db.prepare('UPDATE users SET last_seen=datetime("now") WHERE id=?').run(user.id);
-      } catch {}
+      try { db.prepare('UPDATE partners SET last_seen=datetime("now") WHERE id=?').run(partner.id); } catch {}
     });
-
+  } else if (decoded.user_id || decoded.admin) {
+    // Legacy tokens
+    req.user = { id: decoded.user_id || 0, role: 'admin', name: 'admin' };
   } else {
-    // Старый токен без user_id (legacy) — создаём виртуального admin
-    req.user = { id: 0, role: decoded.role || 'admin', username: 'admin' };
+    res.clearCookie('token');
+    if (req.path.startsWith('/api/')) return res.status(401).json({ error: 'Неверный токен' });
+    return res.redirect('/login');
   }
 
-  // Проверяем минимальную роль
   if (minRole && !hasRole(req.user.role, minRole)) {
     if (req.path.startsWith('/api/')) return res.status(403).json({ error: 'Недостаточно прав' });
     return res.redirect('/');
   }
-
   next();
 }
 
@@ -72,7 +68,8 @@ const auth       = (req, res, next) => authMiddleware(req, res, next, null);
 const authEditor = (req, res, next) => authMiddleware(req, res, next, 'editor');
 const authAdmin  = (req, res, next) => authMiddleware(req, res, next, 'admin');
 
-module.exports       = auth;
-module.exports.authEditor = authEditor;
-module.exports.authAdmin  = authAdmin;
-module.exports.hasRole    = hasRole;
+module.exports = auth;
+module.exports.authEditor  = authEditor;
+module.exports.authAdmin   = authAdmin;
+module.exports.hasRole     = hasRole;
+module.exports.getCookieOpts = getCookieOpts;

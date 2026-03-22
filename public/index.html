@@ -2,324 +2,276 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
 <title>BAZA</title>
-<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;600;700;900&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@600;900&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --bg:#04040a;--s1:#08080f;--s2:#0c0c15;--s3:#10101a;--s4:#14141f;
-  --b1:#1c1c2a;--b2:#252535;--b3:#2e2e42;
+  --bg:#04040a;--s1:#090912;--s2:#0e0e1a;--s3:#131320;--s4:#181828;
+  --b1:#1e1e30;--b2:#262638;--b3:#303048;
   --c:#00e5ff;--cv:#7c3aed;--cg:#00f5a0;--cr:#ff3060;--co:#fbbf24;--cp:#f97316;
-  --t1:#f0f4ff;--t2:#8892b0;--t3:#4a5068;
-  --r:10px;--r2:14px;
-  --font:'Inter',sans-serif;--mono:'JetBrains Mono',monospace;--display:'Unbounded',sans-serif;
+  --t1:#eef2ff;--t2:#8892b0;--t3:#4a5068;
+  --sb:220px;--r:10px;
 }
-html,body{height:100%}
-body{background:var(--bg);color:var(--t1);font-family:var(--font);font-size:13px;display:flex;overflow:hidden}
+html,body{height:100%;overflow:hidden}
+body{background:var(--bg);color:var(--t1);font-family:'Inter',sans-serif;font-size:13px;display:flex;flex-direction:column}
 
-/* SIDEBAR */
-.sb{width:220px;flex-shrink:0;background:var(--s1);border-right:1px solid var(--b1);display:flex;flex-direction:column;height:100vh;position:sticky;top:0;overflow-y:auto}
-.sb-logo{padding:22px 18px 16px;border-bottom:1px solid var(--b1);display:flex;align-items:center;gap:12px}
-.sb-logo-mark{width:32px;height:32px;border-radius:8px;background:linear-gradient(135deg,var(--c),var(--cv));display:flex;align-items:center;justify-content:center;font-family:var(--display);font-size:11px;font-weight:900;color:#04040a;flex-shrink:0}
-.sb-logo-text{font-family:var(--display);font-weight:900;font-size:16px;letter-spacing:-1px;background:linear-gradient(135deg,var(--c),var(--cv));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
-.sb-logo-sub{font-size:8px;color:var(--t3);letter-spacing:2.5px;text-transform:uppercase;margin-top:2px}
+/* ── TOPBAR ── */
+.topbar{height:52px;background:rgba(4,4,10,.9);backdrop-filter:blur(20px);border-bottom:1px solid var(--b1);padding:0 16px;display:flex;align-items:center;gap:10px;flex-shrink:0;position:sticky;top:0;z-index:200}
+.burger{width:36px;height:36px;display:flex;align-items:center;justify-content:center;cursor:pointer;border-radius:8px;border:none;background:transparent;color:var(--t2);font-size:18px;flex-shrink:0;transition:background .15s}
+.burger:hover{background:var(--s3)}
+.logo-top{font-family:'Unbounded',sans-serif;font-weight:900;font-size:15px;background:linear-gradient(135deg,var(--c),var(--cv));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;flex-shrink:0}
+.page-title-top{font-size:13px;font-weight:500;color:var(--t2);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.topbar-r{display:flex;align-items:center;gap:8px;flex-shrink:0}
+.mpick{display:flex;gap:5px}
+.mpick select{background:var(--s2);border:1px solid var(--b2);border-radius:6px;color:var(--t1);padding:4px 7px;font-size:11px;outline:none;cursor:pointer;max-width:90px}
+.live{display:flex;align-items:center;gap:5px}
+.live-d{width:5px;height:5px;border-radius:50%;background:var(--cg);box-shadow:0 0 5px var(--cg);animation:pu 2s infinite;flex-shrink:0}
+@keyframes pu{0%,100%{opacity:1}50%{opacity:.3}}
+.clk{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--t3)}
+.search-btn{padding:5px 10px;background:var(--s3);border:1px solid var(--b2);border-radius:6px;color:var(--t2);font-size:11px;cursor:pointer;display:flex;align-items:center;gap:5px;flex-shrink:0}
+.search-btn:hover{border-color:var(--c);color:var(--c)}
+kbd{display:inline-block;padding:1px 5px;border:1px solid var(--b3);border-radius:3px;font-size:9px;color:var(--t3)}
+
+/* ── LAYOUT ── */
+.layout{display:flex;flex:1;overflow:hidden}
+.sidebar{width:var(--sb);flex-shrink:0;background:var(--s1);border-right:1px solid var(--b1);display:flex;flex-direction:column;height:100%;overflow-y:auto;transition:transform .25s cubic-bezier(.4,0,.2,1)}
+.main{flex:1;overflow-y:auto;overflow-x:hidden}
+.content{padding:16px;max-width:1400px;margin:0 auto}
+
+/* Mobile sidebar overlay */
+.sb-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:150;backdrop-filter:blur(3px)}
+.sb-overlay.show{display:block}
+@media(max-width:768px){
+  .sidebar{position:fixed;left:0;top:52px;height:calc(100% - 52px);z-index:160;transform:translateX(-100%)}
+  .sidebar.open{transform:none}
+  .clk{display:none}
+  .mpick select{max-width:70px;font-size:10px;padding:3px 5px}
+  :root{--sb:220px}
+}
+
+/* ── NAV ── */
 nav{flex:1;padding:10px 8px}
 .nav-g{font-size:8px;color:var(--t3);letter-spacing:2.5px;text-transform:uppercase;padding:14px 10px 5px}
-.nav-i{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:7px;cursor:pointer;color:var(--t2);transition:all .12s;margin-bottom:1px;border:1px solid transparent;font-size:12px;user-select:none}
+.nav-i{display:flex;align-items:center;gap:8px;padding:9px 10px;border-radius:7px;cursor:pointer;color:var(--t2);transition:all .12s;margin-bottom:1px;border:1px solid transparent;font-size:12px;user-select:none}
 .nav-i:hover{background:var(--s3);color:var(--t1)}
-.nav-i.on{background:rgba(0,229,255,.06);color:var(--c);border-color:rgba(0,229,255,.12)}
-.nav-i .ic{font-size:13px;width:16px;text-align:center;flex-shrink:0}
+.nav-i.on{background:rgba(0,229,255,.07);color:var(--c);border-color:rgba(0,229,255,.12)}
+.nav-i .ic{font-size:14px;width:18px;text-align:center;flex-shrink:0}
 .sb-foot{padding:12px;border-top:1px solid var(--b1);display:flex;flex-direction:column;gap:5px}
-.btn-tg,.btn-out{width:100%;padding:9px;border-radius:7px;font-family:var(--font);font-size:11px;cursor:pointer;transition:all .15s;text-align:center;border:1px solid}
-.btn-tg{background:rgba(0,229,255,.07);border-color:rgba(0,229,255,.2);color:var(--c)}
-.btn-tg:hover{background:rgba(0,229,255,.14)}
-.btn-out{background:transparent;border-color:var(--b2);color:var(--t3)}
-.btn-out:hover{border-color:var(--cr);color:var(--cr)}
+.btn-tg,.btn-out{width:100%;padding:9px;border-radius:7px;font-family:'Inter',sans-serif;font-size:11px;cursor:pointer;border:1px solid;text-align:center;transition:all .12s}
+.btn-tg{background:rgba(0,229,255,.07);border-color:rgba(0,229,255,.2);color:var(--c)}.btn-tg:hover{background:rgba(0,229,255,.14)}
+.btn-out{background:transparent;border-color:var(--b2);color:var(--t3)}.btn-out:hover{border-color:var(--cr);color:var(--cr)}
 
-/* MAIN */
-.main{flex:1;display:flex;flex-direction:column;height:100vh;overflow:hidden}
-.topbar{height:52px;background:rgba(4,4,10,.85);backdrop-filter:blur(20px);border-bottom:1px solid var(--b1);padding:0 26px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;position:sticky;top:0;z-index:100}
-.tb-title{font-family:var(--display);font-size:12px;font-weight:700;letter-spacing:-.3px}
-.tb-r{display:flex;align-items:center;gap:10px}
-.mpick select{background:var(--s2);border:1px solid var(--b2);border-radius:6px;color:var(--t1);padding:5px 9px;font-family:var(--font);font-size:11px;outline:none;cursor:pointer}
-.live{display:flex;align-items:center;gap:5px}
-.live-d{width:5px;height:5px;border-radius:50%;background:var(--cg);box-shadow:0 0 5px var(--cg);animation:pu 2s infinite}
-@keyframes pu{0%,100%{opacity:1}50%{opacity:.3}}
-.live-t{font-family:var(--mono);font-size:11px;color:var(--t3)}
-.scroll{flex:1;overflow-y:auto;overflow-x:hidden}
-.content{padding:22px 26px}
-
-/* PAGES */
+/* ── PAGES ── */
 .page{display:none}.page.on{display:block;animation:fi .18s ease}
 @keyframes fi{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}
 
-/* KPI */
-.kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:13px;margin-bottom:18px}
-.kpi{background:var(--s2);border:1px solid var(--b1);border-radius:var(--r2);padding:18px 16px;position:relative;overflow:hidden;transition:border-color .15s,transform .1s}
-.kpi:hover{border-color:var(--b3);transform:translateY(-1px)}
+/* ── KPI GRID ── */
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;margin-bottom:16px}
+.kpi{background:var(--s2);border:1px solid var(--b1);border-radius:var(--r);padding:16px;position:relative;overflow:hidden;transition:transform .1s}
+.kpi:active{transform:scale(.98)}
 .kpi::after{content:'';position:absolute;top:0;left:0;right:0;height:2px;border-radius:2px 2px 0 0}
-.kpi.g::after{background:var(--cg);box-shadow:0 0 8px var(--cg)}
-.kpi.r::after{background:var(--cr)}
-.kpi.b::after{background:var(--c)}
-.kpi.o::after{background:var(--co)}
-.kpi-label{font-size:9px;color:var(--t3);letter-spacing:2px;text-transform:uppercase;margin-bottom:10px}
-.kpi-val{font-family:var(--display);font-size:24px;font-weight:700;line-height:1;letter-spacing:-1px}
-.kpi-val.g{color:var(--cg)}.kpi-val.r{color:var(--cr)}.kpi-val.b{color:var(--c)}.kpi-val.o{color:var(--co)}
-.kpi-sub{font-size:10px;color:var(--t3);margin-top:5px}
-.kpi-spark{margin-top:10px;height:28px;opacity:.7}
+.kpi.g::after{background:var(--cg)}.kpi.r::after{background:var(--cr)}.kpi.b::after{background:var(--c)}.kpi.o::after{background:var(--co)}.kpi.v::after{background:var(--cv)}
+.kpi-label{font-size:9px;color:var(--t3);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:8px}
+.kpi-val{font-family:'Unbounded',sans-serif;font-size:20px;font-weight:700;line-height:1;letter-spacing:-1px}
+.kpi-val.g{color:var(--cg)}.kpi-val.r{color:var(--cr)}.kpi-val.b{color:var(--c)}.kpi-val.o{color:var(--co)}.kpi-val.v{color:#a78bfa}
+.kpi-sub{font-size:9px;color:var(--t3);margin-top:5px}
+.kpi-spark{margin-top:8px;height:24px}
 
-/* PANELS */
-.panel{background:var(--s2);border:1px solid var(--b1);border-radius:var(--r2);overflow:hidden;margin-bottom:16px}
-.ph{padding:13px 16px;border-bottom:1px solid var(--b1);display:flex;align-items:center;justify-content:space-between;gap:8px}
-.ph-title{font-weight:600;font-size:12px;flex:1}
-.pb{padding:16px}
-.g2{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
-.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:16px}
-.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:14px}
+/* ── PANELS ── */
+.panel{background:var(--s2);border:1px solid var(--b1);border-radius:var(--r);overflow:hidden;margin-bottom:14px}
+.ph{padding:12px 15px;border-bottom:1px solid var(--b1);display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.ph-title{font-weight:600;font-size:12px}
+.pb{padding:14px}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:14px}
+@media(max-width:600px){.g2,.g3{grid-template-columns:1fr}}
 
-/* TABLES */
-.tw{overflow-x:auto}
+/* ── TABLES ── */
+.tw{overflow-x:auto;-webkit-overflow-scrolling:touch}
 table{width:100%;border-collapse:collapse;font-size:12px}
 thead tr{background:var(--s3)}
-th{padding:9px 12px;text-align:left;font-size:9px;color:var(--t3);letter-spacing:1.5px;text-transform:uppercase;font-weight:500;white-space:nowrap}
-td{padding:8px 12px;border-top:1px solid var(--b1);color:var(--t2);vertical-align:middle}
+th{padding:8px 11px;text-align:left;font-size:9px;color:var(--t3);letter-spacing:1.2px;text-transform:uppercase;font-weight:500;white-space:nowrap}
+td{padding:8px 11px;border-top:1px solid var(--b1);color:var(--t2);vertical-align:middle}
 tr:hover td{background:rgba(255,255,255,.015)}
-.tg{color:var(--cg)!important;font-weight:600}
-.tr2{color:var(--cr)!important;font-weight:600}
-.tb2{color:var(--c)!important;font-weight:600}
-.to{color:var(--co)!important;font-weight:600}
+.tg{color:var(--cg)!important;font-weight:600}.tr2{color:var(--cr)!important;font-weight:600}
+.tb2{color:var(--c)!important;font-weight:600}.to{color:var(--co)!important;font-weight:600}
 .del-btn{color:var(--t3);cursor:pointer;opacity:0;transition:all .12s;padding:3px 6px;border-radius:4px;border:none;background:none;font-size:11px}
-tr:hover .del-btn{opacity:1}
-.del-btn:hover{color:var(--cr);background:rgba(255,48,96,.1)}
+tr:hover .del-btn{opacity:1}.del-btn:hover{color:var(--cr);background:rgba(255,48,96,.1)}
+@media(max-width:600px){.del-btn{opacity:1}}
 
-/* INLINE EDIT */
-td.editable{cursor:text;position:relative}
-td.editable:hover::before{content:'✎';position:absolute;right:4px;top:50%;transform:translateY(-50%);font-size:10px;color:var(--t3);opacity:.6}
-td.editing input{background:var(--s1);border:1px solid var(--c);border-radius:4px;padding:3px 7px;color:var(--t1);font-family:var(--mono);font-size:12px;width:100%;outline:none}
+/* Inline edit */
+td.ed{cursor:text}
+td.ed:after{content:'✎';font-size:9px;color:var(--t3);margin-left:5px;opacity:0}
+td.ed:hover:after{opacity:.6}
+td.ed input{background:var(--s1);border:1px solid var(--c);border-radius:4px;padding:3px 7px;color:var(--t1);font-size:12px;width:100%;outline:none;font-family:'JetBrains Mono',monospace}
 
-/* FORMS */
-.fg{display:grid;gap:11px}
-.fr{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:9px}
+/* ── FORMS ── */
+.fg{display:grid;gap:10px}.fr{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px}
 .fi{display:flex;flex-direction:column;gap:4px}
 .fi label{font-size:9px;color:var(--t3);letter-spacing:1.5px;text-transform:uppercase}
-.fi input,.fi select,.fi textarea{background:var(--s1);border:1px solid var(--b2);border-radius:6px;padding:8px 10px;color:var(--t1);font-family:var(--font);font-size:12px;outline:none;transition:border-color .12s,box-shadow .12s;width:100%}
-.fi input:focus,.fi select:focus,.fi textarea:focus{border-color:var(--c);box-shadow:0 0 0 2px rgba(0,229,255,.07)}
+.fi input,.fi select,.fi textarea{background:var(--s1);border:1px solid var(--b2);border-radius:6px;padding:8px 10px;color:var(--t1);font-family:'Inter',sans-serif;font-size:12px;outline:none;transition:border-color .12s;width:100%;-webkit-appearance:none}
+.fi input:focus,.fi select:focus{border-color:var(--c);box-shadow:0 0 0 2px rgba(0,229,255,.07)}
 .fi select option{background:var(--s1)}
-.btn-add{padding:10px 20px;background:linear-gradient(135deg,#00c4dc,#0099b8);border:none;border-radius:7px;color:#04040a;font-family:var(--display);font-size:11px;font-weight:700;cursor:pointer;transition:all .15s;letter-spacing:.3px}
-.btn-add:hover{opacity:.88;transform:translateY(-1px)}
-.btn-sm{padding:6px 12px;background:transparent;border:1px solid var(--b2);border-radius:6px;color:var(--t2);font-family:var(--font);font-size:11px;cursor:pointer;transition:all .12s}
+.fi input[type=color]{height:38px;cursor:pointer;padding:4px 8px}
+.btn-add{padding:10px 18px;background:linear-gradient(135deg,#00c4dc,#0099b8);border:none;border-radius:7px;color:#04040a;font-family:'Unbounded',sans-serif;font-size:11px;font-weight:700;cursor:pointer;transition:all .15s;white-space:nowrap}
+.btn-add:hover{opacity:.88;transform:translateY(-1px)}.btn-add:active{transform:none}
+.btn-sm{padding:6px 12px;background:transparent;border:1px solid var(--b2);border-radius:6px;color:var(--t2);font-size:11px;cursor:pointer;transition:all .12s;white-space:nowrap}
 .btn-sm:hover{border-color:var(--c);color:var(--c)}
-.btn-danger{border-color:var(--cr)!important;color:var(--cr)!important}
-.btn-danger:hover{background:rgba(255,48,96,.1)!important}
+.btn-danger{border-color:var(--cr)!important;color:var(--cr)!important}.btn-danger:hover{background:rgba(255,48,96,.08)!important}
 
-/* BADGES */
-.badge{display:inline-block;padding:2px 7px;border-radius:4px;font-size:9px;font-weight:600;letter-spacing:.5px;text-transform:uppercase}
+/* ── BADGES ── */
+.badge{display:inline-block;padding:2px 7px;border-radius:4px;font-size:9px;font-weight:600;letter-spacing:.3px}
 .bg{background:rgba(0,245,160,.1);color:var(--cg);border:1px solid rgba(0,245,160,.2)}
 .br{background:rgba(255,48,96,.1);color:var(--cr);border:1px solid rgba(255,48,96,.2)}
 .bb{background:rgba(0,229,255,.1);color:var(--c);border:1px solid rgba(0,229,255,.2)}
 .bo{background:rgba(251,191,36,.1);color:var(--co);border:1px solid rgba(251,191,36,.2)}
 .bv{background:rgba(124,58,237,.1);color:#a78bfa;border:1px solid rgba(124,58,237,.2)}
-.bp{background:rgba(249,115,22,.1);color:var(--cp);border:1px solid rgba(249,115,22,.2)}
 
-/* TOAST */
-#toast{position:fixed;bottom:20px;right:20px;z-index:9999;background:var(--s3);border:1px solid var(--b2);border-radius:9px;padding:11px 16px;font-size:12px;transform:translateY(60px);opacity:0;transition:all .25s cubic-bezier(.16,1,.3,1);pointer-events:none;max-width:280px}
+/* ── TOAST ── */
+#toast{position:fixed;bottom:20px;right:20px;z-index:9999;background:var(--s3);border:1px solid var(--b2);border-radius:9px;padding:11px 16px;font-size:12px;transform:translateY(60px);opacity:0;transition:all .25s;pointer-events:none;max-width:280px}
 #toast.on{transform:none;opacity:1}
 #toast.success{border-color:rgba(0,245,160,.3);color:var(--cg)}
 #toast.error{border-color:rgba(255,48,96,.3);color:var(--cr)}
 
-/* MODAL */
-#modal{display:none;position:fixed;inset:0;z-index:1000;background:rgba(0,0,0,.75);backdrop-filter:blur(6px);align-items:center;justify-content:center;animation:fi .15s}
-.modal-box{background:var(--s2);border:1px solid var(--b2);border-radius:var(--r2);padding:26px;max-width:440px;width:92%;box-shadow:0 40px 80px rgba(0,0,0,.7)}
-.modal-title{font-family:var(--display);font-size:14px;font-weight:700;margin-bottom:14px}
-.modal-actions{display:flex;gap:9px;justify-content:flex-end;margin-top:18px}
+/* ── MODAL ── */
+#modal{display:none;position:fixed;inset:0;z-index:1000;background:rgba(0,0,0,.75);backdrop-filter:blur(6px);align-items:center;justify-content:center;padding:16px}
+.modal-box{background:var(--s2);border:1px solid var(--b2);border-radius:14px;padding:24px;width:100%;max-width:460px;box-shadow:0 40px 80px rgba(0,0,0,.7);max-height:90vh;overflow-y:auto}
+.modal-title{font-family:'Unbounded',sans-serif;font-size:13px;font-weight:700;margin-bottom:14px}
+.modal-actions{display:flex;gap:9px;justify-content:flex-end;margin-top:18px;flex-wrap:wrap}
 
-/* SEARCH MODAL */
-#search-modal{display:none;position:fixed;inset:0;z-index:2000;background:rgba(0,0,0,.8);backdrop-filter:blur(8px);align-items:flex-start;justify-content:center;padding-top:80px}
-.search-box{background:var(--s2);border:1px solid var(--b2);border-radius:var(--r2);width:560px;max-width:94%;box-shadow:0 40px 80px rgba(0,0,0,.8);overflow:hidden}
-.search-inp-wrap{display:flex;align-items:center;gap:10px;padding:14px 16px;border-bottom:1px solid var(--b1)}
-.search-inp-wrap span{color:var(--t3);font-size:14px}
-#search-input{background:transparent;border:none;outline:none;color:var(--t1);font-size:15px;flex:1;font-family:var(--font)}
-#search-results{max-height:340px;overflow-y:auto}
-.sr-item{display:flex;align-items:center;gap:10px;padding:10px 16px;cursor:pointer;border-bottom:1px solid var(--b1);transition:background .1s}
-.sr-item:hover{background:var(--s3)}
-.sr-type{font-size:9px;padding:2px 6px;border-radius:3px;flex-shrink:0}
-.sr-title{flex:1;font-size:12px}
-.sr-date{font-size:10px;color:var(--t3)}
-.sr-amount{font-size:12px;font-weight:600;color:var(--c)}
-.search-empty{padding:30px;text-align:center;color:var(--t3);font-size:12px}
+/* ── SEARCH ── */
+#search-modal{display:none;position:fixed;inset:0;z-index:2000;background:rgba(0,0,0,.8);backdrop-filter:blur(8px);align-items:flex-start;justify-content:center;padding:60px 16px 16px}
+.search-box{background:var(--s2);border:1px solid var(--b2);border-radius:14px;width:100%;max-width:560px;overflow:hidden}
+.si-wrap{display:flex;align-items:center;gap:10px;padding:14px;border-bottom:1px solid var(--b1)}
+.si-wrap span{color:var(--t3);font-size:16px;flex-shrink:0}
+#si{background:transparent;border:none;outline:none;color:var(--t1);font-size:15px;flex:1;font-family:'Inter',sans-serif}
+#sr{max-height:360px;overflow-y:auto}
+.sr-i{display:flex;align-items:center;gap:10px;padding:10px 14px;cursor:pointer;border-bottom:1px solid var(--b1);transition:background .1s}
+.sr-i:hover{background:var(--s3)}
+.sr-i .badge{flex-shrink:0}.sr-title{flex:1;font-size:12px}.sr-date{font-size:10px;color:var(--t3);flex-shrink:0}
+.s-empty{padding:30px;text-align:center;color:var(--t3);font-size:12px}
 
-/* CHART */
-.cw{position:relative;height:210px}.cw.tall{height:270px}.cw.sh{height:140px}
+/* ── CHART ── */
+.cw{position:relative;height:200px}.cw.tall{height:260px}.cw.sh{height:130px}
 
-/* HEATMAP */
-.heatmap-wrap{overflow-x:auto}
-.heatmap-grid{display:grid;grid-template-rows:repeat(7,14px);grid-auto-flow:column;gap:2px;width:max-content}
-.hm-cell{width:14px;height:14px;border-radius:2px;cursor:pointer;transition:opacity .1s}
+/* ── PARTNER CARDS ── */
+.partner-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px}
+.p-card{background:var(--s2);border:1px solid var(--b1);border-radius:var(--r);padding:16px;cursor:pointer;transition:all .15s;position:relative;overflow:hidden}
+.p-card:hover{border-color:var(--b3);transform:translateY(-2px)}
+.p-card:active{transform:none}
+.p-card-top{position:absolute;top:0;left:0;right:0;height:3px;border-radius:var(--r) var(--r) 0 0}
+.p-av{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;flex-shrink:0}
+.p-st{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--b1);font-size:11px}
+.p-st:last-child{border-bottom:none}
+
+/* ── PARTNER POPUP ── */
+.p-popup{display:none;position:fixed;inset:0;z-index:1000;background:rgba(0,0,0,.75);backdrop-filter:blur(6px);align-items:center;justify-content:center;padding:16px}
+.p-popup-box{background:var(--s2);border:1px solid var(--b2);border-radius:14px;width:100%;max-width:500px;max-height:90vh;overflow-y:auto;box-shadow:0 40px 80px rgba(0,0,0,.7)}
+.p-popup-head{padding:20px 20px 0;display:flex;align-items:center;gap:14px;position:sticky;top:0;background:var(--s2);border-bottom:1px solid var(--b1);padding-bottom:14px;z-index:1}
+.p-popup-body{padding:16px 20px 20px}
+.p-kpi-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+.p-kpi-card{background:var(--s3);border-radius:8px;padding:12px}
+.p-kpi-label{font-size:9px;color:var(--t3);letter-spacing:1px;text-transform:uppercase;margin-bottom:5px}
+.p-kpi-val{font-family:'Unbounded',sans-serif;font-size:16px;font-weight:700}
+
+/* ── RECEIPTS GALLERY ── */
+.gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px}
+.g-item{background:var(--s3);border:1px solid var(--b1);border-radius:9px;overflow:hidden;cursor:pointer;transition:all .15s;position:relative}
+.g-item:hover{border-color:var(--c);transform:translateY(-2px)}
+.g-img{width:100%;height:90px;object-fit:cover;display:block}
+.g-pdf{width:100%;height:90px;display:flex;align-items:center;justify-content:center;font-size:26px;background:var(--s4)}
+.g-info{padding:7px 9px}
+.g-name{font-size:10px;color:var(--t2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.g-meta{font-size:9px;color:var(--t3);margin-top:2px}
+.g-del{position:absolute;top:5px;right:5px;background:rgba(255,48,96,.85);color:#fff;border:none;border-radius:4px;padding:2px 6px;cursor:pointer;font-size:10px;opacity:0;transition:opacity .12s}
+.g-item:hover .g-del,.g-item:focus .g-del{opacity:1}
+@media(max-width:600px){.gallery{grid-template-columns:repeat(auto-fill,minmax(100px,1fr))}.g-del{opacity:1}}
+
+/* ── TX TYPE ICON ── */
+.tx-ic{display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:6px;font-size:12px;flex-shrink:0}
+.tx-ic.inc{background:rgba(0,245,160,.1);color:var(--cg)}
+.tx-ic.exp{background:rgba(255,48,96,.1);color:var(--cr)}
+
+/* ── DRAG DROP ── */
+.drop{border:2px dashed var(--b2);border-radius:8px;padding:16px;text-align:center;cursor:pointer;transition:all .15s;color:var(--t3);font-size:12px;position:relative}
+.drop input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.drop:hover,.drop.drag{border-color:var(--c);color:var(--c);background:rgba(0,229,255,.03)}
+
+/* ── INFO BOX ── */
+.info-box{background:var(--s3);border-left:3px solid var(--c);border-radius:0 7px 7px 0;padding:10px 13px;font-size:11px;color:var(--t2);line-height:1.7;margin-bottom:12px}
+.info-box code{color:var(--c);background:rgba(0,229,255,.1);padding:1px 4px;border-radius:3px;font-family:'JetBrains Mono',monospace}
+
+/* ── HEATMAP ── */
+.hm-grid{display:grid;grid-template-rows:repeat(7,13px);grid-auto-flow:column;gap:2px;width:max-content}
+.hm-cell{width:13px;height:13px;border-radius:2px;cursor:pointer;transition:opacity .1s}
 .hm-cell:hover{opacity:.7;outline:1px solid rgba(255,255,255,.3)}
-.hm-months{display:flex;gap:2px;width:max-content;margin-bottom:3px}
-.hm-month{font-size:9px;color:var(--t3);width:max-content}
-.hm-days{display:grid;grid-template-rows:repeat(7,14px);gap:2px;margin-right:5px}
-.hm-day{font-size:9px;color:var(--t3);height:14px;display:flex;align-items:center}
-.hm-legend{display:flex;align-items:center;gap:6px;margin-top:8px;font-size:10px;color:var(--t3)}
+.hm-legend{display:flex;align-items:center;gap:5px;margin-top:7px;font-size:10px;color:var(--t3)}
 
-/* BUDGET BARS */
-.bgt-row{display:grid;grid-template-columns:120px 1fr 80px 80px;gap:12px;align-items:center;padding:10px 0;border-bottom:1px solid var(--b1)}
-.bgt-row:last-child{border-bottom:none}
-.bgt-bar-bg{background:var(--s3);border-radius:4px;height:6px;overflow:hidden}
-.bgt-bar{height:100%;border-radius:4px;transition:width .5s ease}
+/* ── INV BAR ── */
+.inv-bg{background:var(--s3);border-radius:3px;height:6px;overflow:hidden;margin-top:4px}
+.inv-bar{height:100%;border-radius:3px;transition:width .6s ease}
 
-/* RECEIPT GALLERY */
-.gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px}
-.gallery-item{background:var(--s3);border:1px solid var(--b1);border-radius:9px;overflow:hidden;cursor:pointer;transition:all .15s;position:relative}
-.gallery-item:hover{border-color:var(--c);transform:translateY(-2px)}
-.gallery-thumb{width:100%;height:100px;object-fit:cover;display:block}
-.gallery-pdf{width:100%;height:100px;display:flex;align-items:center;justify-content:center;font-size:28px;background:var(--s4)}
-.gallery-info{padding:7px 9px}
-.gallery-name{font-size:10px;color:var(--t2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.gallery-date{font-size:9px;color:var(--t3);margin-top:2px}
-.gallery-del{position:absolute;top:5px;right:5px;background:rgba(255,48,96,.8);color:#fff;border:none;border-radius:4px;padding:2px 6px;cursor:pointer;font-size:10px;opacity:0;transition:opacity .15s}
-.gallery-item:hover .gallery-del{opacity:1}
-
-/* UPLOAD */
-.drop-zone{border:2px dashed var(--b2);border-radius:8px;padding:18px;text-align:center;cursor:pointer;transition:all .15s;color:var(--t3);font-size:12px}
-.drop-zone:hover,.drop-zone.drag{border-color:var(--c);color:var(--c);background:rgba(0,229,255,.03)}
-
-/* PARTNER CARDS */
-.partner-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:13px}
-.p-card{background:var(--s2);border:1px solid var(--b1);border-radius:var(--r2);padding:17px;position:relative;overflow:hidden;transition:border-color .15s}
-.p-card:hover{border-color:var(--b2)}
-.p-avatar{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex-shrink:0}
-.p-stat{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid var(--b1);font-size:11px}
-.p-stat:last-child{border-bottom:none}
-
-/* INVESTOR BAR */
-.inv-bg{background:var(--s3);border-radius:4px;height:7px;overflow:hidden;margin-top:5px}
-.inv-bar{height:100%;border-radius:4px;transition:width .6s ease}
-
-/* SETTINGS */
-.settings-section{margin-bottom:22px}
-.settings-title{font-family:var(--display);font-size:11px;font-weight:700;color:var(--t3);letter-spacing:1px;text-transform:uppercase;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid var(--b1)}
-.setting-row{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--b1)}
-.setting-row:last-child{border-bottom:none}
-.setting-label{font-size:12px;color:var(--t1)}
-.setting-desc{font-size:10px;color:var(--t3);margin-top:2px}
-.toggle{position:relative;width:36px;height:20px;flex-shrink:0}
-.toggle input{opacity:0;width:0;height:0}
-.toggle-track{position:absolute;inset:0;background:var(--b2);border-radius:10px;cursor:pointer;transition:background .2s}
-.toggle input:checked + .toggle-track{background:var(--c)}
-.toggle-thumb{position:absolute;top:2px;left:2px;width:16px;height:16px;background:#fff;border-radius:50%;transition:transform .2s;pointer-events:none}
-.toggle input:checked ~ .toggle-thumb{transform:translateX(16px)}
-.tag-badge{display:inline-block;background:rgba(0,229,255,.1);color:var(--c);border:1px solid rgba(0,229,255,.15);border-radius:4px;padding:2px 8px;font-size:10px;margin:2px}
-
-/* DIST */
-.dist-row{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--b1)}
-.dist-row:last-child{border-bottom:none}
-
-/* INFO BOX */
-.info-box{background:var(--s3);border-left:3px solid var(--c);border-radius:0 7px 7px 0;padding:11px 14px;font-size:11px;color:var(--t2);line-height:1.7;margin-bottom:13px}
-.info-box code{color:var(--c);background:rgba(0,229,255,.1);padding:1px 4px;border-radius:3px;font-family:var(--mono)}
-
-/* ROI */
-.roi-positive{color:var(--cg)!important}.roi-negative{color:var(--cr)!important}
-
+/* ── SCROLLBAR ── */
 ::-webkit-scrollbar{width:4px;height:4px}
 ::-webkit-scrollbar-track{background:transparent}
 ::-webkit-scrollbar-thumb{background:var(--b2);border-radius:2px}
-.empty{text-align:center;padding:32px;color:var(--t3);font-size:12px}
-.spin{display:inline-block;width:12px;height:12px;border:2px solid var(--b2);border-top-color:var(--c);border-radius:50%;animation:sp .5s linear infinite}
+.empty{text-align:center;padding:28px;color:var(--t3);font-size:12px}
+.spin{display:inline-block;width:12px;height:12px;border:2px solid var(--b2);border-top-color:var(--c);border-radius:50%;animation:sp .5s linear infinite;margin:auto}
 @keyframes sp{to{transform:rotate(360deg)}}
-kbd{display:inline-block;padding:2px 6px;border:1px solid var(--b2);border-radius:4px;font-size:10px;color:var(--t3);font-family:var(--mono);background:var(--s3)}
 </style>
 </head>
 <body>
 
-<aside class="sb">
-  <div class="sb-logo">
-    <div class="sb-logo-mark">B</div>
-    <div>
-      <div class="sb-logo-text">BAZA</div>
-      <div class="sb-logo-sub">VPN Finance</div>
+<div class="topbar">
+  <button class="burger" id="burgerBtn" onclick="toggleSidebar()">☰</button>
+  <div class="logo-top">BAZA</div>
+  <div class="page-title-top" id="ptitle">Дашборд</div>
+  <div class="topbar-r">
+    <div class="mpick">
+      <select id="mSel" onchange="onMC()"></select>
+      <select id="ySel" onchange="onMC()"></select>
     </div>
+    <button class="search-btn" onclick="openSearch()">🔍 <kbd>⌘K</kbd></button>
+    <div class="live"><div class="live-d"></div><span class="clk" id="clk"></span></div>
   </div>
-  <nav>
-    <div class="nav-g">Учёт</div>
-    <div class="nav-i on" data-page="dashboard"><span class="ic">⬡</span>Дашборд</div>
-    <div class="nav-i" data-page="daily"><span class="ic">◷</span>Ежедневник</div>
-    <div class="nav-i" data-page="expenses"><span class="ic">◈</span>Расходы</div>
-    <div class="nav-i" data-page="investments"><span class="ic">◎</span>Инвестиции</div>
-    <div class="nav-i" data-page="ads"><span class="ic">◆</span>Реклама</div>
-    <div class="nav-g">Аналитика</div>
-    <div class="nav-i" data-page="stats"><span class="ic">◉</span>Статистика</div>
-    <div class="nav-i" data-page="heatmap"><span class="ic">▦</span>Тепловая карта</div>
-    <div class="nav-i" data-page="budget"><span class="ic">◐</span>Бюджет vs Факт</div>
-    <div class="nav-i" data-page="distribution"><span class="ic">◑</span>Распределение</div>
-    <div class="nav-g">Система</div>
-    <div class="nav-i" data-page="partners"><span class="ic">◯</span>Партнёры</div>
-    <div class="nav-i" data-page="receipts"><span class="ic">▣</span>Галерея чеков</div>
-    <div class="nav-i" data-page="settings"><span class="ic">⚙</span>Настройки</div>
-    <div class="nav-i" data-page="users"><span class="ic">◫</span>Пользователи</div>
-    <div class="nav-i" data-page="webhook"><span class="ic">◈</span>Webhook API</div>
-    <div class="nav-i" data-page="audit"><span class="ic">◉</span>Журнал действий</div>
-    <div class="nav-i" data-page="io"><span class="ic">⇄</span>Импорт / Экспорт</div>
-  </nav>
-  <div class="sb-foot">
-    <button class="btn-tg" onclick="sendReport()">⚡ Отправить отчёт в TG</button>
-    <button class="btn-out" onclick="logout()">↩ Выйти</button>
-  </div>
-</aside>
+</div>
 
-<div class="main">
-  <div class="topbar">
-    <div class="tb-title" id="pageTitle">Дашборд</div>
-    <div class="tb-r">
-      <div class="mpick">
-        <select id="mSel" onchange="onMC()"></select>
-        <select id="ySel" onchange="onMC()"></select>
-      </div>
-      <div style="display:flex;align-items:center;gap:6px;cursor:pointer;opacity:.7" onclick="openSearch()" title="Cmd+K">
-        <span style="font-size:11px;color:var(--t3)">Поиск</span>
-        <kbd>⌘K</kbd>
-      </div>
-      <div class="live"><div class="live-d"></div><span class="live-t" id="clk"></span></div>
+<div class="layout">
+  <div class="sb-overlay" id="sbOv" onclick="closeSidebar()"></div>
+  <aside class="sidebar" id="sb">
+    <nav>
+      <div class="nav-g">Главное</div>
+      <div class="nav-i on" data-page="dashboard"><span class="ic">⬡</span>Дашборд</div>
+      <div class="nav-i" data-page="transactions"><span class="ic">⇄</span>Движение денег</div>
+      <div class="nav-i" data-page="ads"><span class="ic">◆</span>Реклама</div>
+      <div class="nav-g">Аналитика</div>
+      <div class="nav-i" data-page="stats"><span class="ic">◉</span>Статистика</div>
+      <div class="nav-i" data-page="heatmap"><span class="ic">▦</span>Тепловая карта</div>
+      <div class="nav-g">Управление</div>
+      <div class="nav-i" data-page="partners"><span class="ic">◯</span>Партнёры</div>
+      <div class="nav-i" data-page="receipts"><span class="ic">▣</span>Чеки</div>
+      <div class="nav-i" data-page="settings"><span class="ic">⚙</span>Настройки</div>
+      <div class="nav-i admin-only" data-page="audit"><span class="ic">◉</span>Журнал</div>
+      <div class="nav-i" data-page="io"><span class="ic">⇅</span>Импорт/Экспорт</div>
+    </nav>
+    <div class="sb-foot">
+      <button class="btn-tg" onclick="sendReport()">⚡ Отправить отчёт</button>
+      <button class="btn-out" onclick="logout()">↩ Выйти</button>
     </div>
-  </div>
+  </aside>
 
-  <div class="scroll">
+  <div class="main">
   <div class="content">
 
   <!-- DASHBOARD -->
   <div class="page on" id="page-dashboard">
-    <div class="kpi-grid">
-      <div class="kpi g">
-        <div class="kpi-label">Выручка месяц</div>
-        <div class="kpi-val g" id="k-rev">—</div>
-        <div class="kpi-sub" id="k-rev-s">—</div>
-        <div class="kpi-spark"><canvas id="sp-rev" height="28"></canvas></div>
-      </div>
-      <div class="kpi r">
-        <div class="kpi-label">Расходы со счёта</div>
-        <div class="kpi-val r" id="k-exp">—</div>
-        <div class="kpi-sub" id="k-exp-s">—</div>
-        <div class="kpi-spark"><canvas id="sp-exp" height="28"></canvas></div>
-      </div>
-      <div class="kpi b">
-        <div class="kpi-label">Чистая прибыль</div>
-        <div class="kpi-val b" id="k-net">—</div>
-        <div class="kpi-sub" id="k-net-s">текущий месяц</div>
-        <div class="kpi-spark"><canvas id="sp-net" height="28"></canvas></div>
-      </div>
-      <div class="kpi o">
-        <div class="kpi-label">Прогноз до конца</div>
-        <div class="kpi-val o" id="k-fore">—</div>
-        <div class="kpi-sub" id="k-fore-s">—</div>
-        <div class="kpi-spark"><canvas id="sp-fore" height="28"></canvas></div>
-      </div>
-    </div>
+    <div class="kpi-grid" id="dash-kpis"></div>
     <div class="g2">
       <div class="panel">
-        <div class="ph"><span class="ph-title">Доход / Расход по дням</span></div>
+        <div class="ph"><span class="ph-title">Доходы / Расходы</span></div>
         <div class="pb"><div class="cw"><canvas id="cRev"></canvas></div></div>
       </div>
       <div class="panel">
@@ -329,113 +281,67 @@ kbd{display:inline-block;padding:2px 6px;border:1px solid var(--b2);border-radiu
     </div>
     <div class="g2">
       <div class="panel">
-        <div class="ph"><span class="ph-title">Снятия партнёров</span></div>
+        <div class="ph"><span class="ph-title">Партнёры — месяц</span></div>
         <div class="pb" id="dash-partners"></div>
       </div>
       <div class="panel">
-        <div class="ph"><span class="ph-title">Последние записи</span></div>
-        <div class="tw"><table><thead><tr><th>Дата</th><th>Доход</th><th>Расход</th><th>Чистый</th></tr></thead><tbody id="recent-body"></tbody></table></div>
+        <div class="ph"><span class="ph-title">Последние операции</span></div>
+        <div class="tw"><table><thead><tr><th>Дата</th><th>Тип</th><th>Описание</th><th>Сумма</th></tr></thead><tbody id="recent-body"></tbody></table></div>
       </div>
     </div>
   </div>
 
-  <!-- DAILY -->
-  <div class="page" id="page-daily">
-    <div class="panel" style="margin-bottom:16px">
-      <div class="ph"><span class="ph-title">➕ Добавить / обновить запись</span><span style="font-size:10px;color:var(--t3)">Tab→поле, Enter→сохранить</span></div>
+  <!-- TRANSACTIONS -->
+  <div class="page" id="page-transactions">
+    <div class="panel" style="margin-bottom:14px">
+      <div class="ph"><span class="ph-title">➕ Новая операция</span><div style="display:flex;gap:6px"><button class="btn-sm" id="btn-inc" onclick="setTxType('income')" style="border-color:var(--cg);color:var(--cg)">▲ Доход</button><button class="btn-sm" id="btn-exp" onclick="setTxType('expense')">▼ Расход</button></div></div>
       <div class="pb">
-        <form class="fg" id="dailyForm">
+        <form class="fg" id="txForm">
           <div class="fr">
-            <div class="fi"><label>Дата *</label><input type="date" id="d-date" required></div>
-            <div class="fi"><label>Доход ₽</label><input type="number" id="d-rev" placeholder="0.00" step="0.01" min="0"></div>
-            <div class="fi"><label>Расход (нал) ₽</label><input type="number" id="d-exp" placeholder="0.00" step="0.01" min="0"></div>
-          </div>
-          <div id="daily-partners-fields" class="fr"></div>
-          <div class="fr">
-            <div class="fi" style="grid-column:1/-1"><label>Примечание</label><input type="text" id="d-note" placeholder="Необязательно"></div>
-          </div>
-          <div><button type="submit" class="btn-add">Сохранить</button></div>
-        </form>
-      </div>
-    </div>
-    <div class="panel">
-      <div class="ph"><span class="ph-title">Записи за месяц</span><span id="daily-cnt" style="font-size:10px;color:var(--t3)"></span></div>
-      <div class="tw">
-        <table><thead><tr><th>Дата</th><th>Доход</th><th>Расход</th><th>Чистый</th><th id="th-partners"></th><th>Примечание</th><th></th></tr></thead>
-        <tbody id="daily-body"></tbody></table>
-      </div>
-    </div>
-  </div>
-
-  <!-- EXPENSES -->
-  <div class="page" id="page-expenses">
-    <div class="panel" style="margin-bottom:16px">
-      <div class="ph"><span class="ph-title">➕ Добавить расход</span></div>
-      <div class="pb">
-        <form class="fg" id="expenseForm">
-          <div class="fr">
-            <div class="fi"><label>Дата *</label><input type="date" id="e-date" required></div>
-            <div class="fi"><label>Категория *</label>
-              <select id="e-cat"><option>Реклама</option><option>Сервера</option><option>LeadTex</option><option>ФНС</option><option>ТГ Прем</option><option>СКАМ</option><option>Прочее</option></select>
-            </div>
-            <div class="fi"><label>Сумма ₽ *</label><input type="number" id="e-amt" required placeholder="0.00" step="0.01" min="0"></div>
+            <div class="fi"><label>Дата *</label><input type="date" id="tx-date" required></div>
+            <div class="fi"><label>Сумма ₽ *</label><input type="number" id="tx-amount" required placeholder="0.00" step="0.01" min="0"></div>
+            <div class="fi"><label>Категория</label><select id="tx-cat"></select></div>
+            <div class="fi"><label>Партнёр</label><select id="tx-partner"><option value="">— нет —</option></select></div>
           </div>
           <div class="fr">
-            <div class="fi" style="flex:2"><label>Описание *</label><input type="text" id="e-desc" required placeholder="Оплата серверов Fornex"></div>
-            <div class="fi" style="flex:2"><label>Ссылка на чек</label><input type="url" id="e-url" placeholder="https://..."></div>
+            <div class="fi" style="flex:2"><label>Описание</label><input type="text" id="tx-desc" placeholder="Что это?"></div>
+            <div class="fi"><label>Ссылка на чек</label><input type="url" id="tx-url" placeholder="https://..."></div>
           </div>
           <div class="fi">
-            <label>Загрузить чек на сервер</label>
-            <div class="drop-zone" id="e-drop" onclick="document.getElementById('e-file').click()">
-              📎 Нажми или перетащи файл (JPG, PNG, PDF до 15 МБ)
-              <input type="file" id="e-file" accept="image/*,.pdf" style="display:none" onchange="onFile(this,'e-prev','e-drop')">
-            </div>
-            <div id="e-prev" style="display:none;margin-top:6px;font-size:11px;color:var(--c)"></div>
+            <label>Загрузить чек</label>
+            <div class="drop" id="tx-drop">📎 Нажми или перетащи файл<input type="file" id="tx-file" accept="image/*,.pdf" onchange="onFile(this,'tx-drop','tx-prev')"></div>
+            <div id="tx-prev" style="display:none;font-size:11px;color:var(--c);margin-top:5px"></div>
           </div>
-          <div><button type="submit" class="btn-add">Добавить</button></div>
+          <div class="fr">
+            <div class="fi" style="grid-column:1/-1"><label>Примечание</label><input type="text" id="tx-note" placeholder="Необязательно"></div>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px"><button type="submit" class="btn-add">Сохранить</button><span id="tx-type-label" style="font-size:11px;color:var(--cg)">▲ Доход</span></div>
         </form>
       </div>
     </div>
     <div class="panel">
-      <div class="ph"><span class="ph-title">Расходы со счёта</span><span id="exp-total" style="font-size:12px;color:var(--cr);font-weight:600"></span></div>
+      <div class="ph">
+        <span class="ph-title">Все операции</span>
+        <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
+          <select id="tx-filter-type" onchange="loadTransactions()" style="background:var(--s3);border:1px solid var(--b2);border-radius:6px;color:var(--t1);padding:4px 7px;font-size:11px;outline:none">
+            <option value="">Все типы</option><option value="income">Доходы</option><option value="expense">Расходы</option>
+          </select>
+          <select id="tx-filter-cat" onchange="loadTransactions()" style="background:var(--s3);border:1px solid var(--b2);border-radius:6px;color:var(--t1);padding:4px 7px;font-size:11px;outline:none;max-width:140px">
+            <option value="">Все категории</option>
+          </select>
+          <span id="tx-totals" style="font-size:11px;color:var(--t3)"></span>
+        </div>
+      </div>
       <div class="tw">
-        <table><thead><tr><th>Дата</th><th>Категория</th><th>Описание</th><th>Сумма</th><th>Чек</th><th></th></tr></thead>
-        <tbody id="expense-body"></tbody></table>
+        <table><thead><tr><th>Дата</th><th></th><th>Категория</th><th>Описание</th><th>Партнёр</th><th>Сумма</th><th>Чек</th><th></th></tr></thead>
+        <tbody id="tx-body"></tbody></table>
       </div>
-    </div>
-  </div>
-
-  <!-- INVESTMENTS -->
-  <div class="page" id="page-investments">
-    <div id="inv-tracker" style="margin-bottom:16px"></div>
-    <div class="panel" style="margin-bottom:16px">
-      <div class="ph"><span class="ph-title">➕ Добавить операцию</span></div>
-      <div class="pb">
-        <form class="fg" id="invForm">
-          <div class="fr">
-            <div class="fi"><label>Дата *</label><input type="date" id="i-date" required></div>
-            <div class="fi"><label>Партнёр</label><select id="i-partner"><option value="">— нет —</option></select></div>
-            <div class="fi"><label>Тип *</label><select id="i-type"><option value="expense">Расход</option><option value="invested">Вложено</option><option value="returned">Возврат инвестору</option></select></div>
-            <div class="fi"><label>Категория</label><select id="i-cat"><option value="">— нет —</option><option>Реклама</option><option>Сервера</option><option>LeadTex</option><option>ФНС</option><option>ТГ Прем</option><option>Розыгрыш</option><option>СКАМ</option></select></div>
-            <div class="fi"><label>Сумма ₽ *</label><input type="number" id="i-amt" required placeholder="0.00" step="0.01" min="0"></div>
-          </div>
-          <div class="fr">
-            <div class="fi"><label>Ссылка чек</label><input type="url" id="i-url" placeholder="https://..."></div>
-            <div class="fi"><label>Примечание</label><input type="text" id="i-note" placeholder="Необязательно"></div>
-          </div>
-          <div><button type="submit" class="btn-add">Добавить</button></div>
-        </form>
-      </div>
-    </div>
-    <div class="panel">
-      <div class="ph"><span class="ph-title">Операции</span></div>
-      <div class="tw"><table><thead><tr><th>Дата</th><th>Партнёр</th><th>Тип</th><th>Категория</th><th>Сумма</th><th>Чек</th><th></th></tr></thead><tbody id="inv-body"></tbody></table></div>
     </div>
   </div>
 
   <!-- ADS -->
   <div class="page" id="page-ads">
-    <div class="panel" style="margin-bottom:16px">
+    <div class="panel" style="margin-bottom:14px">
       <div class="ph"><span class="ph-title">➕ Добавить кампанию</span></div>
       <div class="pb">
         <form class="fg" id="adsForm">
@@ -443,22 +349,16 @@ kbd{display:inline-block;padding:2px 6px;border:1px solid var(--b2);border-radiu
             <div class="fi"><label>Дата *</label><input type="date" id="a-date" required></div>
             <div class="fi"><label>Формат</label><input type="text" id="a-fmt" placeholder="2/48, 1/24..."></div>
             <div class="fi"><label>Сумма ₽ *</label><input type="number" id="a-amt" required placeholder="0.00" step="0.01" min="0"></div>
-            <div class="fi"><label>Прирост подп.</label><input type="number" id="a-subs" placeholder="0" min="0"></div>
+            <div class="fi"><label>+Подписчиков</label><input type="number" id="a-subs" placeholder="0" min="0"></div>
           </div>
           <div class="fr">
             <div class="fi"><label>Название канала *</label><input type="text" id="a-name" required placeholder="TikTok Updates 🔥"></div>
             <div class="fi"><label>Ссылка на канал</label><input type="url" id="a-ch" placeholder="https://t.me/..."></div>
           </div>
           <div class="fi">
-            <label>Скриншот рекламы (URL или загрузить)</label>
-            <div class="fr" style="gap:8px">
-              <div class="fi" style="flex:2"><input type="url" id="a-sc" placeholder="https://... или загрузи файл ниже"></div>
-            </div>
-            <div class="drop-zone" style="margin-top:7px" id="a-drop" onclick="document.getElementById('a-file').click()">
-              🖼 Перетащи или нажми для загрузки скриншота
-              <input type="file" id="a-file" accept="image/*" style="display:none" onchange="onFile(this,'a-prev','a-drop')">
-            </div>
-            <div id="a-prev" style="display:none;margin-top:6px;font-size:11px;color:var(--c)"></div>
+            <label>Скриншот</label>
+            <div class="drop" id="a-drop">🖼 Перетащи или нажми<input type="file" id="a-file" accept="image/*" onchange="onFile(this,'a-drop','a-prev')"></div>
+            <div id="a-prev" style="display:none;font-size:11px;color:var(--c);margin-top:5px"></div>
           </div>
           <div><button type="submit" class="btn-add">Добавить</button></div>
         </form>
@@ -466,7 +366,7 @@ kbd{display:inline-block;padding:2px 6px;border:1px solid var(--b2);border-radiu
     </div>
     <div class="g2">
       <div class="panel">
-        <div class="ph"><span class="ph-title">Кампании</span><span id="ads-total" style="font-size:12px;color:var(--co);font-weight:600"></span></div>
+        <div class="ph"><span class="ph-title">Кампании</span><span id="ads-total" style="font-size:11px;color:var(--co);font-weight:600"></span></div>
         <div class="tw"><table><thead><tr><th>Дата</th><th>Формат</th><th>Название</th><th>Сумма</th><th>Подп.</th><th>₽/подп.</th><th>Скрин</th><th></th></tr></thead><tbody id="ads-body"></tbody></table></div>
       </div>
       <div class="panel">
@@ -478,18 +378,18 @@ kbd{display:inline-block;padding:2px 6px;border:1px solid var(--b2);border-radiu
 
   <!-- STATS -->
   <div class="page" id="page-stats">
-    <div class="panel" style="margin-bottom:16px">
-      <div class="ph"><span class="ph-title">Выручка по месяцам</span></div>
+    <div class="panel" style="margin-bottom:14px">
+      <div class="ph"><span class="ph-title">Доходы / Расходы по месяцам</span></div>
       <div class="pb"><div class="cw tall"><canvas id="cMonthly"></canvas></div></div>
     </div>
     <div class="g2">
       <div class="panel">
         <div class="ph"><span class="ph-title">Сводная таблица</span></div>
-        <div class="tw"><table><thead><tr><th>Месяц</th><th>Выручка</th><th>% рост</th><th>Расходы</th><th>Чистый</th><th>Ср./день</th></tr></thead><tbody id="stats-body"></tbody></table></div>
+        <div class="tw"><table><thead><tr><th>Месяц</th><th>Доход</th><th>% рост</th><th>Расход</th><th>Чистый</th></tr></thead><tbody id="stats-body"></tbody></table></div>
       </div>
       <div class="panel">
         <div class="ph"><span class="ph-title">Ручные KPI</span><button class="btn-sm" onclick="openKpiModal()">+ Добавить</button></div>
-        <div class="tw"><table><thead><tr><th>Месяц</th><th>Ср.чек</th><th>Оплат</th><th>Возвр.</th><th>Онлайн</th><th>Подп.</th></tr></thead><tbody id="kpi-body"></tbody></table></div>
+        <div class="tw"><table><thead><tr><th>Месяц</th><th>Ср.чек</th><th>Оплат</th><th>Онлайн</th><th>Подп.</th></tr></thead><tbody id="kpi-body"></tbody></table></div>
       </div>
     </div>
   </div>
@@ -497,117 +397,64 @@ kbd{display:inline-block;padding:2px 6px;border:1px solid var(--b2);border-radiu
   <!-- HEATMAP -->
   <div class="page" id="page-heatmap">
     <div class="panel">
-      <div class="ph"><span class="ph-title">Тепловая карта дохода</span><select id="hm-year" onchange="loadHeatmap()" style="background:var(--s3);border:1px solid var(--b2);border-radius:6px;color:var(--t1);padding:4px 8px;font-size:11px;outline:none"></select></div>
-      <div class="pb">
-        <div id="heatmap-container"></div>
-        <div class="hm-legend">
-          <span>Меньше</span>
-          <div style="width:13px;height:13px;border-radius:2px;background:#161620"></div>
-          <div style="width:13px;height:13px;border-radius:2px;background:#0d2e2a"></div>
-          <div style="width:13px;height:13px;border-radius:2px;background:#0a5c4e"></div>
-          <div style="width:13px;height:13px;border-radius:2px;background:#069e7e"></div>
-          <div style="width:13px;height:13px;border-radius:2px;background:var(--cg)"></div>
+      <div class="ph"><span class="ph-title">Тепловая карта дохода</span><select id="hm-year" onchange="loadHeatmap()" style="background:var(--s3);border:1px solid var(--b2);border-radius:6px;color:var(--t1);padding:4px 7px;font-size:11px;outline:none"></select></div>
+      <div class="pb"><div style="overflow-x:auto"><div id="hm-wrap"></div></div>
+        <div class="hm-legend"><span>Меньше</span>
+          <div style="width:12px;height:12px;border-radius:2px;background:#161620"></div>
+          <div style="width:12px;height:12px;border-radius:2px;background:#0d3020"></div>
+          <div style="width:12px;height:12px;border-radius:2px;background:#0a5c3e"></div>
+          <div style="width:12px;height:12px;border-radius:2px;background:#069e6e"></div>
+          <div style="width:12px;height:12px;border-radius:2px;background:var(--cg)"></div>
           <span>Больше</span>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- BUDGET -->
-  <div class="page" id="page-budget">
-    <div class="g2">
-      <div class="panel">
-        <div class="ph"><span class="ph-title">Установить план на месяц</span></div>
-        <div class="pb">
-          <form class="fg" id="budgetForm">
-            <div class="fr">
-              <div class="fi"><label>Месяц</label><input type="month" id="b-month"></div>
-            </div>
-            <div class="fr">
-              <div class="fi"><label>Плановая выручка ₽</label><input type="number" id="b-rev" placeholder="0" step="1000"></div>
-              <div class="fi"><label>Расходы итого ₽</label><input type="number" id="b-exp" placeholder="0" step="1000"></div>
-            </div>
-            <div style="font-size:10px;color:var(--t3);margin:-4px 0 4px">По категориям (расходы со счёта):</div>
-            <div class="fr">
-              <div class="fi"><label>Реклама ₽</label><input type="number" id="b-adv" placeholder="0" step="1000"></div>
-              <div class="fi"><label>Сервера ₽</label><input type="number" id="b-srv" placeholder="0" step="1000"></div>
-              <div class="fi"><label>LeadTex ₽</label><input type="number" id="b-ltx" placeholder="0" step="1000"></div>
-              <div class="fi"><label>ФНС ₽</label><input type="number" id="b-fns" placeholder="0" step="1000"></div>
-            </div>
-            <div><button type="submit" class="btn-add">Сохранить план</button></div>
-          </form>
-        </div>
-      </div>
-      <div class="panel">
-        <div class="ph"><span class="ph-title">Факт vs План</span></div>
-        <div class="pb" id="budget-fact"></div>
-      </div>
-    </div>
-  </div>
-
-  <!-- DISTRIBUTION -->
-  <div class="page" id="page-distribution">
-    <div class="g2">
-      <div class="panel">
-        <div class="ph"><span class="ph-title">Калькулятор распределения</span></div>
-        <div class="pb">
-          <div class="info-box">Фиксированные суммы выплачиваются первыми. Остаток делится по процентам. Доли задаются в <b>Партнёры</b>.</div>
-          <div class="fg">
-            <div class="fi"><label>Чистая прибыль ₽</label><input type="number" id="dist-p" placeholder="0.00" step="0.01" min="0"></div>
-            <div style="display:flex;gap:8px">
-              <button class="btn-add" onclick="calcDist()">Рассчитать</button>
-              <button class="btn-sm" onclick="useNet()">← Из месяца</button>
-            </div>
-          </div>
-          <div id="dist-result" style="display:none;margin-top:14px;background:var(--s3);border:1px solid var(--b2);border-radius:8px;padding:13px"></div>
-          <div id="dist-apply" style="display:none;margin-top:10px"><button class="btn-add" onclick="applyDist()">✓ Записать как выплаты</button></div>
-        </div>
-      </div>
-      <div class="panel">
-        <div class="ph"><span class="ph-title">История выплат</span></div>
-        <div class="tw"><table><thead><tr><th>Дата</th><th>Партнёр</th><th>Тип</th><th>Сумма</th></tr></thead><tbody id="payouts-body"></tbody></table></div>
-      </div>
-    </div>
-  </div>
-
   <!-- PARTNERS -->
   <div class="page" id="page-partners">
-    <div class="panel" style="margin-bottom:16px">
-      <div class="ph"><span class="ph-title">➕ Добавить партнёра</span></div>
-      <div class="pb">
+    <div class="panel" style="margin-bottom:14px" id="partner-form-panel">
+      <div class="ph"><span class="ph-title">➕ Добавить партнёра</span><button class="btn-sm" onclick="togglePartnerForm()">Свернуть</button></div>
+      <div class="pb" id="partner-form-body">
         <form class="fg" id="partnerForm">
           <div class="fr">
             <div class="fi"><label>Имя *</label><input type="text" id="p-name" required placeholder="Артём"></div>
-            <div class="fi"><label>Роль *</label><select id="p-role"><option value="owner">Партнёр / владелец</option><option value="investor">Инвестор</option><option value="employee">Сотрудник</option></select></div>
-            <div class="fi"><label>Тип доли</label><select id="p-stype"><option value="none">Не участвует</option><option value="percent">% от прибыли</option><option value="fixed">Фиксированная ₽</option></select></div>
+            <div class="fi"><label>Роль *</label><select id="p-role"><option value="owner">Партнёр</option><option value="investor">Инвестор</option><option value="employee">Сотрудник</option></select></div>
+            <div class="fi"><label>Доля</label><select id="p-stype"><option value="none">Не задана</option><option value="percent">%</option><option value="fixed">Фикс. ₽</option></select></div>
             <div class="fi"><label>Размер доли</label><input type="number" id="p-sval" placeholder="0" step="0.01" min="0"></div>
           </div>
           <div class="fr">
-            <div class="fi"><label>Цвет</label><input type="color" id="p-color" value="#00e5ff" style="height:38px;cursor:pointer"></div>
-            <div class="fi"><label>Telegram Chat ID</label><input type="text" id="p-tg" placeholder="-100xxxxxxxxxx"></div>
-            <div class="fi"><label>Порядок</label><input type="number" id="p-order" placeholder="1" min="0"></div>
+            <div class="fi"><label>Цвет</label><input type="color" id="p-color" value="#00e5ff"></div>
+            <div class="fi"><label>TG User ID</label><input type="text" id="p-tg" placeholder="12345678"><div style="font-size:9px;color:var(--t3);margin-top:2px">Узнать: /id в боте</div></div>
+            <div class="fi"><label>Заметки</label><input type="text" id="p-notes" placeholder="Личные заметки (только вам)"></div>
           </div>
-          <div><button type="submit" class="btn-add">Добавить</button></div>
+          <div style="background:var(--s3);border:1px solid var(--b1);border-radius:8px;padding:12px">
+            <div style="font-size:10px;color:var(--t3);margin-bottom:8px;letter-spacing:1px;text-transform:uppercase">Создать логин/пароль для доступа к сайту</div>
+            <div class="fr">
+              <div class="fi"><label>Логин</label><input type="text" id="p-uname" placeholder="ivan"></div>
+              <div class="fi"><label>Пароль</label>
+                <div style="display:flex;gap:5px"><input type="text" id="p-upass" placeholder="Нажми генерировать"><button type="button" class="btn-sm" onclick="genPass()" style="flex-shrink:0">🎲</button></div>
+              </div>
+            </div>
+          </div>
+          <div><button type="submit" class="btn-add">Добавить партнёра</button></div>
         </form>
       </div>
     </div>
-    <div id="partners-grid" class="partner-grid"></div>
+    <div class="partner-grid" id="partners-grid"></div>
   </div>
 
-  <!-- RECEIPTS GALLERY -->
+  <!-- RECEIPTS -->
   <div class="page" id="page-receipts">
-    <div class="panel" style="margin-bottom:16px">
+    <div class="panel" style="margin-bottom:14px">
       <div class="ph"><span class="ph-title">Загрузить файл</span></div>
       <div class="pb">
-        <div class="drop-zone" id="r-drop" onclick="document.getElementById('r-file').click()">
-          📎 Загрузить чек или скриншот (JPG, PNG, PDF до 15 МБ)
-          <input type="file" id="r-file" accept="image/*,.pdf" style="display:none" onchange="uploadReceipt(this)">
-        </div>
+        <div class="drop" id="r-drop">📎 Загрузить чек или скриншот (JPG, PNG, PDF)<input type="file" id="r-file" accept="image/*,.pdf" onchange="uploadReceipt(this)"></div>
       </div>
     </div>
     <div class="panel">
-      <div class="ph"><span class="ph-title">Все файлы</span><span id="receipts-cnt" style="font-size:10px;color:var(--t3)"></span></div>
-      <div class="pb" id="gallery-grid"></div>
+      <div class="ph"><span class="ph-title">Все чеки</span><span id="rc-cnt" style="font-size:10px;color:var(--t3)"></span></div>
+      <div class="pb" id="gallery-wrap"></div>
     </div>
   </div>
 
@@ -615,1113 +462,751 @@ kbd{display:inline-block;padding:2px 6px;border:1px solid var(--b2);border-radiu
   <div class="page" id="page-settings">
     <div class="g2">
       <div>
-        <div class="panel" style="margin-bottom:16px">
+        <div class="panel" style="margin-bottom:14px">
           <div class="ph"><span class="ph-title">🤖 Telegram Bot</span></div>
           <div class="pb">
             <div class="fg">
               <div class="fi">
                 <label>Bot Token</label>
-                <input type="password" id="s-token" placeholder="123456789:AAxxxxxxxxx...">
-                <div style="margin-top:6px;display:flex;gap:7px">
-                  <button class="btn-sm" onclick="testBot()">Проверить соединение</button>
-                  <span id="bot-status" style="font-size:11px;padding-top:6px"></span>
+                <input type="password" id="s-token" placeholder="123456789:AAxxxxxxxxx">
+                <div style="display:flex;gap:7px;margin-top:6px;align-items:center">
+                  <button class="btn-sm" onclick="testBot()">Проверить</button>
+                  <span id="bot-st" style="font-size:11px"></span>
                 </div>
               </div>
-              <div class="fi"><label>Основной канал/группа (Chat ID)</label><input type="text" id="s-channel" placeholder="-100xxxxxxxxxx"></div>
+              <div class="fi"><label>Основной канал (Chat ID)</label><input type="text" id="s-channel" placeholder="-100xxxxxxxx"><div style="font-size:9px;color:var(--t3);margin-top:2px">Узнать: добавь бота в канал → @getidsbot</div></div>
+              <div class="fi"><label>URL сайта</label><input type="url" id="s-url" placeholder="https://hiprpol.hideyou.top"></div>
+              <div class="fi"><label>Час отчёта (МСК)</label><input type="number" id="s-hour" min="0" max="23" placeholder="21"></div>
             </div>
           </div>
         </div>
-        <div class="panel" style="margin-bottom:16px">
-          <div class="ph"><span class="ph-title">📢 Куда отправлять отчёты</span></div>
-          <div class="pb">
-            <div class="info-box">Отчёты отправляются в основной канал. Партнёры получают уведомления на свой Chat ID (задаётся в карточке партнёра).</div>
-            <div id="report-channels"></div>
-          </div>
+        <div class="panel" style="margin-bottom:14px">
+          <div class="ph"><span class="ph-title">🔔 Уведомления</span></div>
+          <div class="pb" id="notif-wrap"></div>
         </div>
         <div class="panel">
-          <div class="ph"><span class="ph-title">💰 Лимиты по категориям</span></div>
+          <div class="ph"><span class="ph-title">🔌 Webhook API</span></div>
           <div class="pb">
-            <div class="info-box">При превышении лимита придёт уведомление в основной канал.</div>
-            <div class="fg" id="limits-form">
-              <div class="fr" id="limits-fields"></div>
-              <button class="btn-sm" onclick="saveLimits()">Сохранить лимиты</button>
+            <div class="fg">
+              <div class="fi"><label>URL для приёма платежей</label><div style="display:flex;gap:7px"><input type="text" id="wh-url" readonly style="font-size:11px;color:var(--c);font-family:var(--mono)"><button class="btn-sm" onclick="copyWh()">Скопировать</button></div></div>
+              <div class="fi"><label>Секрет (X-Webhook-Secret)</label><div style="display:flex;gap:7px"><input type="text" id="wh-secret" style="font-size:11px"><button class="btn-sm" onclick="genSecret()">🎲</button></div></div>
+              <div style="display:flex;gap:8px;flex-wrap:wrap">
+                <label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer"><input type="checkbox" id="wh-auto">Авто добавлять в доходы (live)</label>
+                <label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer"><input type="checkbox" id="wh-notify">TG при оплате</label>
+              </div>
+              <div style="display:flex;gap:7px">
+                <button class="btn-sm" onclick="testWebhook()">▶ Тест</button>
+                <button class="btn-sm" onclick="showCurl()">cURL пример</button>
+              </div>
+              <div id="wh-test-result" style="display:none"></div>
             </div>
           </div>
         </div>
       </div>
       <div>
-        <div class="panel" style="margin-bottom:16px">
-          <div class="ph"><span class="ph-title">🔔 Уведомления</span></div>
-          <div class="pb" id="notif-settings"></div>
+        <div class="panel" style="margin-bottom:14px">
+          <div class="ph"><span class="ph-title">🏷 Категории</span><button class="btn-sm admin-only" onclick="openCatModal()">+ Добавить</button></div>
+          <div id="cats-list"></div>
         </div>
-        <div class="panel" style="margin-bottom:16px">
-          <div class="ph"><span class="ph-title">⏰ Расписание отчётов</span></div>
-          <div class="pb">
-            <div class="fg">
-              <div class="fi"><label>Час отправки (МСК)</label><input type="number" id="s-hour" min="0" max="23" placeholder="21"></div>
-              <div class="info-box" style="margin-top:4px">Изменение вступит в силу после перезапуска сервиса: <code>sudo ./setup.sh --restart</code></div>
-            </div>
-          </div>
+        <div class="panel" style="margin-bottom:14px">
+          <div class="ph"><span class="ph-title">👥 Пользователи</span><button class="btn-sm admin-only" onclick="openUserModal()">+ Создать</button></div>
+          <div class="tw"><table><thead><tr><th>Логин / TG</th><th>Роль</th><th>Статус</th><th></th></tr></thead><tbody id="users-body"></tbody></table></div>
         </div>
         <div class="panel">
-          <div class="ph"><span class="ph-title">💬 Команды бота</span></div>
-          <div class="pb">
-            <div class="info-box">
-              Напиши боту в TG:<br>
-              <code>/today</code> — сводка за сегодня<br>
-              <code>/month</code> — сводка за месяц<br>
-              <code>/report</code> — отправить отчёт<br>
-              <code>доход 12500</code> — записать доход<br>
-              <code>расход 5000 реклама яндекс</code> — расход<br>
-              <code>снятие 30000 артём</code> — снятие партнёра
-            </div>
-          </div>
+          <div class="ph"><span class="ph-title">Приглашения</span></div>
+          <div class="pb" id="invites-wrap"></div>
         </div>
       </div>
     </div>
-    <div style="display:flex;justify-content:flex-end;margin-top:4px">
-      <button class="btn-add" onclick="saveSettings()">💾 Сохранить все настройки</button>
+    <div style="display:flex;justify-content:flex-end"><button class="btn-add" onclick="saveSettings()">💾 Сохранить настройки</button></div>
+  </div>
+
+  <!-- AUDIT -->
+  <div class="page" id="page-audit">
+    <div class="panel">
+      <div class="ph"><span class="ph-title">Журнал действий</span><span id="audit-total" style="font-size:10px;color:var(--t3)"></span></div>
+      <div class="tw">
+        <table><thead><tr><th>Время</th><th>Пользователь</th><th>Роль</th><th>Действие</th><th>Детали</th><th>IP</th></tr></thead>
+        <tbody id="audit-body"></tbody></table>
+      </div>
+      <div style="padding:12px"><button class="btn-sm" id="audit-more" style="display:none" onclick="loadMoreAudit()">Загрузить ещё</button></div>
     </div>
   </div>
 
   <!-- IO -->
   <div class="page" id="page-io">
     <div class="g2">
-      <div>
-        <div class="panel" style="margin-bottom:16px">
-          <div class="ph"><span class="ph-title">📤 Экспорт</span></div>
-          <div class="pb" style="display:flex;flex-direction:column;gap:9px">
-            <div class="fr">
-              <div class="fi"><label>Месяц для Excel</label><select id="exp-m"></select></div>
-              <div class="fi"><label>Год</label><select id="exp-y"></select></div>
-            </div>
-            <button class="btn-add" onclick="exportExcel()">📊 Excel за месяц</button>
-            <button class="btn-sm" onclick="exportJson()">💾 JSON-бэкап (все данные)</button>
+      <div class="panel">
+        <div class="ph"><span class="ph-title">📤 Экспорт</span></div>
+        <div class="pb" style="display:flex;flex-direction:column;gap:9px">
+          <div class="fr">
+            <div class="fi"><label>Месяц для Excel</label><select id="exp-m"></select></div>
+            <div class="fi"><label>Год</label><select id="exp-y"></select></div>
           </div>
-        </div>
-        <div class="panel">
-          <div class="ph"><span class="ph-title">ℹ️ Форматы импорта</span></div>
-          <div class="pb">
-            <div class="info-box">
-              <b>Ежедневник:</b> <code>date</code>, <code>revenue</code>, <code>expense</code>, <code>note</code><br>
-              <b>Расходы:</b> <code>date</code>, <code>category</code>, <code>description</code>, <code>amount</code><br>
-              <b>Реклама:</b> <code>date</code>, <code>format</code>, <code>amount</code>, <code>name</code>, <code>subscribers_gain</code><br><br>
-              JSON-бэкап можно загрузить обратно как есть.
-            </div>
-          </div>
+          <button class="btn-add" onclick="exportExcel()">📊 Excel за месяц</button>
+          <button class="btn-sm" onclick="exportJson()">💾 JSON-бэкап всей базы</button>
         </div>
       </div>
       <div class="panel">
-        <div class="ph"><span class="ph-title">📥 Импорт</span></div>
+        <div class="ph"><span class="ph-title">📥 Импорт JSON</span></div>
         <div class="pb">
           <div class="info-box">Загрузи JSON-бэкап BAZA. Дубликаты пропускаются.</div>
-          <div class="drop-zone" id="imp-drop" onclick="document.getElementById('imp-file').click()">
-            📥 Нажми или перетащи .json файл
-            <input type="file" id="imp-file" accept=".json" style="display:none" onchange="handleImport(this)">
-          </div>
+          <div class="drop" id="imp-drop">📥 Нажми или перетащи .json файл<input type="file" id="imp-file" accept=".json" onchange="handleImport(this)"></div>
           <div id="imp-status" style="margin-top:10px;display:none"></div>
         </div>
       </div>
     </div>
   </div>
 
-
-  <!-- USERS PAGE -->
-  <div class="page" id="page-users">
-    <div class="g2">
-      <div class="panel" style="margin-bottom:0">
-        <div class="ph"><span class="ph-title">➕ Создать пользователя</span></div>
-        <div class="pb">
-          <form class="fg" id="userForm">
-            <div class="fr">
-              <div class="fi"><label>Логин *</label><input type="text" id="u-name" required placeholder="ivan"></div>
-              <div class="fi"><label>Пароль *</label><input type="password" id="u-pass" required placeholder="••••••••"></div>
-              <div class="fi"><label>Роль *</label>
-                <select id="u-role">
-                  <option value="viewer">Читатель — только просмотр</option>
-                  <option value="editor">Редактор — добавлять/удалять</option>
-                  <option value="admin">Администратор — полный доступ</option>
-                </select>
-              </div>
-            </div>
-            <div><button type="submit" class="btn-add">Создать пользователя</button></div>
-          </form>
-        </div>
-      </div>
-      <div class="panel" style="margin-bottom:0">
-        <div class="ph"><span class="ph-title">🔗 Создать invite-ссылку (TG)</span></div>
-        <div class="pb">
-          <div class="info-box">Ссылка — одноразовая. Пользователь перейдёт и войдёт через Telegram. Роль назначается заранее.</div>
-          <div class="fg">
-            <div class="fr">
-              <div class="fi"><label>Роль</label>
-                <select id="inv-role">
-                  <option value="viewer">Читатель</option>
-                  <option value="editor">Редактор</option>
-                  <option value="admin">Администратор</option>
-                </select>
-              </div>
-              <div class="fi"><label>Срок (часов)</label><input type="number" id="inv-hours" value="24" min="1" max="720"></div>
-              <div class="fi"><label>Заметка (необязательно)</label><input type="text" id="inv-note" placeholder="Для Ивана"></div>
-            </div>
-            <button class="btn-add" onclick="createInvite()">Создать ссылку</button>
-          </div>
-          <div id="invite-result" style="display:none;margin-top:14px;background:var(--s3);border:1px solid var(--b2);border-radius:8px;padding:12px"></div>
-        </div>
-      </div>
-    </div>
-    <div class="panel" style="margin-top:16px">
-      <div class="ph"><span class="ph-title">Пользователи системы</span><button class="btn-sm" onclick="loadUsers()">↺ Обновить</button></div>
-      <div class="tw"><table><thead><tr><th>ID</th><th>Логин / TG</th><th>Роль</th><th>Статус</th><th>Последний вход</th><th></th></tr></thead><tbody id="users-body"></tbody></table></div>
-    </div>
-    <div class="panel" style="margin-top:16px">
-      <div class="ph"><span class="ph-title">Активные приглашения</span></div>
-      <div class="tw"><table><thead><tr><th>Роль</th><th>Заметка</th><th>Истекает</th><th>Использовано</th><th>Ссылка</th><th></th></tr></thead><tbody id="invites-body"></tbody></table></div>
-    </div>
-  </div>
-
-  <!-- WEBHOOK PAGE -->
-  <div class="page" id="page-webhook">
-    <div class="g2">
-      <div>
-        <div class="panel" style="margin-bottom:16px">
-          <div class="ph"><span class="ph-title">🔌 Настройка Webhook</span></div>
-          <div class="pb">
-            <div class="fg">
-              <div class="fi">
-                <label>URL вашего Webhook (отправляйте сюда POST-запросы)</label>
-                <div style="display:flex;gap:8px;align-items:center">
-                  <input type="text" id="wh-url" readonly style="font-family:var(--mono);font-size:11px;color:var(--c)">
-                  <button class="btn-sm" onclick="copyWebhookUrl()">Скопировать</button>
-                </div>
-              </div>
-              <div class="fi">
-                <label>Секретный ключ (X-Webhook-Secret)</label>
-                <div style="display:flex;gap:8px">
-                  <input type="text" id="wh-secret" placeholder="Сгенерируй или введи свой" style="font-family:var(--mono);font-size:11px;flex:1">
-                  <button class="btn-sm" onclick="genSecret()">Генерировать</button>
-                </div>
-                <div style="font-size:10px;color:var(--t3);margin-top:4px">Добавь этот ключ в заголовок <code style="color:var(--c)">X-Webhook-Secret</code> своих запросов</div>
-              </div>
-              <div style="display:flex;align-items:center;gap:10px">
-                <label style="display:flex;align-items:center;gap:7px;cursor:pointer;font-size:12px">
-                  <input type="checkbox" id="wh-auto-rev" checked>
-                  Автоматически добавлять оплаты в выручку дня (только live)
-                </label>
-              </div>
-              <div style="display:flex;align-items:center;gap:10px">
-                <label style="display:flex;align-items:center;gap:7px;cursor:pointer;font-size:12px">
-                  <input type="checkbox" id="wh-notify" checked>
-                  Уведомления в TG при получении оплаты
-                </label>
-              </div>
-              <button class="btn-add" onclick="saveWebhookSettings()">Сохранить настройки</button>
-            </div>
-          </div>
-        </div>
-        <div class="panel">
-          <div class="ph"><span class="ph-title">📊 Статистика платежей</span></div>
-          <div class="pb" id="wh-stats"></div>
-        </div>
-      </div>
-      <div>
-        <div class="panel" style="margin-bottom:16px">
-          <div class="ph"><span class="ph-title">🧪 Генератор тестового запроса</span></div>
-          <div class="pb">
-            <div class="fg">
-              <div class="fr">
-                <div class="fi"><label>Сумма ₽</label><input type="number" id="test-amount" value="1500" min="1"></div>
-                <div class="fi"><label>Имя клиента</label><input type="text" id="test-name" value="Иван Иванов"></div>
-                <div class="fi"><label>Email</label><input type="email" id="test-email" value="ivan@example.com"></div>
-              </div>
-              <div class="fr">
-                <div class="fi"><label>Продукт</label><input type="text" id="test-product" value="VPN Подписка 1 мес."></div>
-                <div class="fi"><label>Режим</label>
-                  <select id="test-mode"><option value="test">🧪 TEST (не пишется в статистику)</option><option value="live">🔴 LIVE (пишется в статистику)</option></select>
-                </div>
-              </div>
-              <div style="display:flex;gap:9px">
-                <button class="btn-add" onclick="sendTestWebhook()">▶ Отправить тест</button>
-                <button class="btn-sm" onclick="genCurlExample()">cURL пример</button>
-              </div>
-              <div id="test-result" style="display:none;margin-top:10px"></div>
-            </div>
-          </div>
-        </div>
-        <div class="panel">
-          <div class="ph"><span class="ph-title">📋 JSON-формат запроса</span></div>
-          <div class="pb">
-            <pre id="json-example" style="background:var(--s3);border:1px solid var(--b2);border-radius:7px;padding:14px;font-family:var(--mono);font-size:11px;color:var(--t2);overflow-x:auto;line-height:1.7"></pre>
-          </div>
-        </div>
-      </div>
-    </div>
-    <div class="panel" style="margin-top:4px">
-      <div class="ph">
-        <span class="ph-title">Входящие платежи</span>
-        <div style="display:flex;gap:8px">
-          <select id="wh-filter" onchange="loadPayments()" style="background:var(--s3);border:1px solid var(--b2);border-radius:6px;color:var(--t1);padding:4px 8px;font-size:11px;outline:none">
-            <option value="">Все</option><option value="live">Live</option><option value="test">Test</option>
-          </select>
-          <button class="btn-sm" onclick="loadPayments()">↺</button>
-        </div>
-      </div>
-      <div class="tw">
-        <table><thead><tr><th>Дата</th><th>Режим</th><th>Сумма</th><th>Клиент</th><th>Email</th><th>Продукт</th><th>Статус</th><th></th></tr></thead>
-        <tbody id="payments-body"></tbody></table>
-      </div>
-    </div>
-  </div>
-
-  <!-- AUDIT PAGE -->
-  <div class="page" id="page-audit">
-    <div class="panel">
-      <div class="ph">
-        <span class="ph-title">Журнал действий</span>
-        <div style="display:flex;gap:8px;align-items:center">
-          <span style="font-size:10px;color:var(--t3)" id="audit-total"></span>
-          <button class="btn-sm" onclick="loadAudit()">↺</button>
-        </div>
-      </div>
-      <div class="tw">
-        <table>
-          <thead><tr><th>Время</th><th>Пользователь</th><th>Роль</th><th>Действие</th><th>Объект</th><th>Детали</th><th>IP</th></tr></thead>
-          <tbody id="audit-body"></tbody>
-        </table>
-      </div>
-      <div style="padding:12px 16px;display:flex;gap:8px">
-        <button class="btn-sm" id="audit-more" onclick="loadMoreAudit()" style="display:none">Загрузить ещё</button>
-      </div>
-    </div>
-  </div>
-
-
   </div><!-- /content -->
-  </div><!-- /scroll -->
-</div><!-- /main -->
+  </div><!-- /main -->
+</div><!-- /layout -->
 
 <div id="toast"></div>
-<div id="modal" style="display:none;position:fixed;inset:0;z-index:1000;align-items:center;justify-content:center"></div>
+<div id="modal" style="display:none"></div>
+<div class="p-popup" id="p-popup" onclick="closePartnerPopup()">
+  <div class="p-popup-box" onclick="event.stopPropagation()">
+    <div class="p-popup-head">
+      <div class="p-av" id="pp-av"></div>
+      <div style="flex:1">
+        <div style="font-family:'Unbounded',sans-serif;font-size:15px;font-weight:700" id="pp-name"></div>
+        <div style="font-size:11px;color:var(--t3);margin-top:2px" id="pp-role"></div>
+      </div>
+      <button class="btn-sm admin-only" onclick="editPartner(currentPartnerId)">Редактировать</button>
+      <button class="btn-sm" style="margin-left:5px" onclick="closePartnerPopup()">✕</button>
+    </div>
+    <div class="p-popup-body">
+      <div class="p-kpi-row">
+        <div class="p-kpi-card"><div class="p-kpi-label">Доход (месяц)</div><div class="p-kpi-val tg" id="pp-minc">—</div></div>
+        <div class="p-kpi-card"><div class="p-kpi-label">Расход (месяц)</div><div class="p-kpi-val tr2" id="pp-mexp">—</div></div>
+        <div class="p-kpi-card"><div class="p-kpi-label">Всего доход</div><div class="p-kpi-val tg" id="pp-ainc">—</div></div>
+        <div class="p-kpi-card"><div class="p-kpi-label">Всего расход</div><div class="p-kpi-val tr2" id="pp-aexp">—</div></div>
+      </div>
+      <div id="pp-invest" style="display:none;margin-bottom:14px">
+        <div style="font-size:10px;color:var(--t3);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px">Инвестиции</div>
+        <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px"><span style="color:var(--t3)">Вложено</span><span class="to" id="pp-invested">—</span></div>
+        <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:6px"><span style="color:var(--t3)">Возвращено</span><span class="tg" id="pp-returned">—</span></div>
+        <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:5px"><span style="font-weight:600">Остаток долга</span><span class="tr2" id="pp-debt">—</span></div>
+        <div class="inv-bg"><div class="inv-bar" id="pp-inv-bar"></div></div>
+      </div>
+      <div id="pp-notes" style="display:none;background:var(--s3);border-radius:7px;padding:10px;font-size:11px;color:var(--t2);margin-bottom:14px"></div>
+      <div>
+        <div style="font-size:10px;color:var(--t3);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px">История операций</div>
+        <div class="tw"><table><thead><tr><th>Дата</th><th>Тип</th><th>Категория</th><th>Сумма</th></tr></thead><tbody id="pp-history"></tbody></table></div>
+      </div>
+      <div style="margin-top:14px;display:flex;gap:8px;flex-wrap:wrap" id="pp-invite-wrap">
+        <button class="btn-sm" onclick="createPartnerInvite(currentPartnerId)">🔗 Пригласить через TG</button>
+      </div>
+      <div id="pp-invite-result" style="display:none;margin-top:10px"></div>
+    </div>
+  </div>
+</div>
+
 <div id="search-modal" onclick="closeSearch()">
   <div class="search-box" onclick="event.stopPropagation()">
-    <div class="search-inp-wrap">
-      <span>🔍</span>
-      <input type="text" id="search-input" placeholder="Поиск по расходам, рекламе, датам..." autocomplete="off" oninput="doSearch(this.value)">
-      <kbd>Esc</kbd>
-    </div>
-    <div id="search-results"><div class="search-empty">Начни вводить для поиска</div></div>
+    <div class="si-wrap"><span>🔍</span><input type="text" id="si" placeholder="Поиск по операциям, рекламе, датам..." oninput="doSearch(this.value)"><kbd>Esc</kbd></div>
+    <div id="sr"><div class="s-empty">Начни вводить...</div></div>
   </div>
 </div>
 
 <script>
 const MN=['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
-const PAGES={dashboard:'Дашборд',daily:'Ежедневник',expenses:'Расходы со счёта',investments:'Инвестиции',ads:'Реклама',stats:'Статистика',heatmap:'Тепловая карта',budget:'Бюджет vs Факт',distribution:'Распределение',partners:'Партнёры',receipts:'Галерея чеков',settings:'Настройки',users:'Пользователи',webhook:'Webhook API',audit:'Журнал действий',io:'Импорт / Экспорт'};
-let curPage='dashboard', partners=[], pendingFiles={}, pendingDist=null;
-let charts={};
+const PAGES={dashboard:'Дашборд',transactions:'Движение денег',ads:'Реклама',stats:'Статистика',heatmap:'Тепловая карта',partners:'Партнёры',receipts:'Галерея чеков',settings:'Настройки',audit:'Журнал действий',io:'Импорт / Экспорт'};
+let curPage='dashboard', curUser=null, partners=[], cats=[], pendingFiles={}, charts={}, txType='income', currentPartnerId=null, auditOffset=0;
 
-// API
-async function api(method,url,body){
-  try{
-    const r=await fetch(url,{method,credentials:'include',headers:body?{'Content-Type':'application/json'}:{},body:body?JSON.stringify(body):undefined});
-    if(r.status===401){window.location.href='/login';return null}
-    if(!r.ok){const e=await r.json().catch(()=>({error:'HTTP '+r.status}));return{error:e.error||'HTTP '+r.status}}
+// ══ API ══════════════════════════════════════════════════════════════════
+async function api(method, url, body) {
+  try {
+    const r = await fetch(url, { method, credentials:'include', headers: body?{'Content-Type':'application/json'}:{}, body: body?JSON.stringify(body):undefined });
+    if (r.status === 401) { window.location.href='/login'; return null; }
+    if (!r.ok) { const e=await r.json().catch(()=>({error:'HTTP '+r.status})); return {error:e.error||'HTTP '+r.status}; }
     return r.json();
-  }catch(e){return{error:'Нет соединения'}}
+  } catch(e) { return {error:'Нет соединения'}; }
 }
-
-// TOAST
-function toast(msg,type='success'){const el=document.getElementById('toast');el.textContent=(type==='success'?'✓  ':'✗  ')+msg;el.className='on '+type;setTimeout(()=>el.className='',3200)}
-
-// MODAL confirm
-function confirm2(msg,onY){
-  const m=document.getElementById('modal');
-  m.style.display='flex';
-  m.innerHTML=`<div style="position:fixed;inset:0;background:rgba(0,0,0,.75);display:flex;align-items:center;justify-content:center;" onclick="closeModal()"><div class="modal-box" onclick="event.stopPropagation()"><div class="modal-title">⚠ Подтверждение</div><p style="color:var(--t2);font-size:12px;line-height:1.6">${msg}</p><div class="modal-actions"><button class="btn-sm" onclick="closeModal()">Отмена</button><button class="btn-sm btn-danger" onclick="closeModal();(${onY.toString()})()">Удалить</button></div></div></div>`;
+function toast(msg, type='success') {
+  const el=document.getElementById('toast'); el.textContent=(type==='success'?'✓  ':'✗  ')+msg;
+  el.className='on '+type; clearTimeout(el._t); el._t=setTimeout(()=>el.className='',3200);
+}
+function confirm2(msg, onY) {
+  const m=document.getElementById('modal'); m.style.display='flex';
+  m.innerHTML=`<div style="position:fixed;inset:0;display:flex;align-items:center;justify-content:center;padding:16px" onclick="closeModal()"><div class="modal-box" onclick="event.stopPropagation()"><div class="modal-title">Подтверждение</div><p style="color:var(--t2);font-size:12px;line-height:1.6">${msg}</p><div class="modal-actions"><button class="btn-sm" onclick="closeModal()">Отмена</button><button class="btn-sm btn-danger" onclick="closeModal();(${onY.toString()})()">Удалить</button></div></div></div>`;
 }
 function closeModal(){document.getElementById('modal').style.display='none'}
-
-// SEARCH
-function openSearch(){document.getElementById('search-modal').style.display='flex';document.getElementById('search-input').focus()}
-function closeSearch(){document.getElementById('search-modal').style.display='none';document.getElementById('search-input').value='';document.getElementById('search-results').innerHTML='<div class="search-empty">Начни вводить для поиска</div>'}
-let searchTimer;
-function doSearch(q){
-  clearTimeout(searchTimer);
-  if(q.length<2){document.getElementById('search-results').innerHTML='<div class="search-empty">Минимум 2 символа</div>';return}
-  searchTimer=setTimeout(async()=>{
-    const r=await api('GET',`/api/search?q=${encodeURIComponent(q)}`);
-    if(!r||r.error){return}
-    const res=r.results||[];
-    if(!res.length){document.getElementById('search-results').innerHTML='<div class="search-empty">Ничего не найдено</div>';return}
-    const typeMap={expense:{label:'Расход',cls:'br'},ad:{label:'Реклама',cls:'bo'},daily:{label:'День',cls:'bg'}};
-    document.getElementById('search-results').innerHTML=res.map(item=>{
-      const t=typeMap[item.type]||{label:item.type,cls:'bb'};
-      return`<div class="sr-item" onclick="closeSearch();nav('${item.type==='ad'?'ads':item.type==='expense'?'expenses':'daily'}')">
-        <span class="badge sr-type ${t.cls}">${t.label}</span>
-        <span class="sr-title">${item.title||'—'}</span>
-        <span class="sr-date">${item.date||''}</span>
-        <span class="sr-amount">${item.amount?item.amount.toLocaleString('ru')+'₽':''}</span>
-      </div>`;
-    }).join('');
-  },300);
-}
-
-// KEYBOARD
-document.addEventListener('keydown',e=>{
-  if((e.metaKey||e.ctrlKey)&&e.key==='k'){e.preventDefault();openSearch()}
-  if(e.key==='Escape'){closeSearch();closeModal()}
-});
-
-// FILE UPLOAD helper
-function onFile(inp,prevId,dropId){
-  const f=inp.files[0];if(!f)return;
-  const key=dropId;pendingFiles[key]=f;
-  document.getElementById(prevId).style.display='block';
-  document.getElementById(prevId).textContent='📎 '+f.name+' ('+Math.round(f.size/1024)+' KB)';
-}
-function setupDrag(areaId,inputId){
-  const a=document.getElementById(areaId);if(!a)return;
-  a.addEventListener('dragover',e=>{e.preventDefault();a.classList.add('drag')});
-  a.addEventListener('dragleave',()=>a.classList.remove('drag'));
-  a.addEventListener('drop',e=>{e.preventDefault();a.classList.remove('drag');const f=e.dataTransfer.files[0];if(!f)return;const inp=document.getElementById(inputId);const dt=new DataTransfer();dt.items.add(f);inp.files=dt.files;inp.dispatchEvent(new Event('change'))});
-}
-async function uploadFile(file,type,id){
-  const fd=new FormData();fd.append('file',file);fd.append('type',type);if(id)fd.append('id',id);
-  const r=await fetch('/api/upload',{method:'POST',credentials:'include',body:fd});
-  if(!r.ok)return null;
-  return r.json();
-}
-
-// INIT
-function init(){
-  const now=new Date();
-  const mS=document.getElementById('mSel'),yS=document.getElementById('ySel');
-  MN.forEach((m,i)=>{const o=document.createElement('option');o.value=i+1;o.textContent=m;if(i===now.getMonth())o.selected=true;mS.appendChild(o)});
-  for(let y=2025;y<=now.getFullYear()+1;y++){const o=document.createElement('option');o.value=y;o.textContent=y;if(y===now.getFullYear())o.selected=true;yS.appendChild(o)}
-  ['d-date','e-date','a-date','i-date'].forEach(id=>{const el=document.getElementById(id);if(el)el.value=now.toISOString().slice(0,10)});
-  const bm=document.getElementById('b-month');if(bm)bm.value=now.toISOString().slice(0,7);
-  // Export selectors
-  const em=document.getElementById('exp-m'),ey=document.getElementById('exp-y');
-  if(em&&ey){MN.forEach((m,i)=>{const o=document.createElement('option');o.value=i+1;o.textContent=m;if(i===now.getMonth())o.selected=true;em.appendChild(o)});for(let y=2025;y<=now.getFullYear()+1;y++){const o=document.createElement('option');o.value=y;o.textContent=y;if(y===now.getFullYear())o.selected=true;ey.appendChild(o)}}
-  // Heatmap year
-  const hy=document.getElementById('hm-year');if(hy){for(let y=2025;y<=now.getFullYear();y++){const o=document.createElement('option');o.value=y;o.textContent=y;if(y===now.getFullYear())o.selected=true;hy.appendChild(o)}}
-  document.querySelectorAll('.nav-i').forEach(el=>el.addEventListener('click',()=>nav(el.dataset.page)));
-  document.getElementById('dailyForm').addEventListener('submit',submitDaily);
-  document.getElementById('expenseForm').addEventListener('submit',submitExpense);
-  document.getElementById('adsForm').addEventListener('submit',submitAds);
-  document.getElementById('invForm').addEventListener('submit',submitInv);
-  document.getElementById('partnerForm').addEventListener('submit',submitPartner);
-  document.getElementById('budgetForm').addEventListener('submit',submitBudget);
-  setupDrag('e-drop','e-file');setupDrag('a-drop','a-file');setupDrag('r-drop','r-file');setupDrag('imp-drop','imp-file');
-  setInterval(()=>{document.getElementById('clk').textContent=new Date().toLocaleTimeString('ru',{hour:'2-digit',minute:'2-digit',second:'2-digit'})},1000);
-  // Загружаем партнёров, потом роль, потом открываем дашборд
-  loadPartners().then(async () => {
-    await loadCurrentUser();
-    nav('dashboard');
-  });
-}
-
 const gM=()=>document.getElementById('mSel').value;
 const gY=()=>document.getElementById('ySel').value;
 const fmt=v=>(v||0).toLocaleString('ru',{minimumFractionDigits:2})+' ₽';
-const fmtN=(v)=>v!=null?v.toLocaleString('ru'):'—';
-function catCls(c){return{Реклама:'bo',Сервера:'bb',ФНС:'br',LeadTex:'bg','ТГ Прем':'bg',СКАМ:'br',Прочее:'bb'}[c]||'bb'}
 
-function nav(p){
+// ══ SIDEBAR ══════════════════════════════════════════════════════════════
+function toggleSidebar() { const sb=document.getElementById('sb'),ov=document.getElementById('sbOv'); sb.classList.toggle('open'); ov.classList.toggle('show'); }
+function closeSidebar() { document.getElementById('sb').classList.remove('open'); document.getElementById('sbOv').classList.remove('show'); }
+
+// ══ SEARCH ═══════════════════════════════════════════════════════════════
+function openSearch() { document.getElementById('search-modal').style.display='flex'; document.getElementById('si').focus(); }
+function closeSearch() { document.getElementById('search-modal').style.display='none'; document.getElementById('si').value=''; document.getElementById('sr').innerHTML='<div class="s-empty">Начни вводить...</div>'; }
+let sTimer;
+function doSearch(q) {
+  clearTimeout(sTimer);
+  if (q.length<2) { document.getElementById('sr').innerHTML='<div class="s-empty">Минимум 2 символа</div>'; return; }
+  sTimer=setTimeout(async()=>{
+    const r=await api('GET',`/api/search?q=${encodeURIComponent(q)}`);
+    if(!r||r.error) return;
+    const items=r.results||[];
+    if(!items.length){document.getElementById('sr').innerHTML='<div class="s-empty">Ничего не найдено</div>';return;}
+    const tc={transaction:'bb',ad:'bo',payment:'bg'};
+    const tl={transaction:'Операция',ad:'Реклама',payment:'Платёж'};
+    document.getElementById('sr').innerHTML=items.map(i=>`<div class="sr-i" onclick="closeSearch();nav('${i.type==='ad'?'ads':'transactions'}')"><span class="badge ${tc[i.type]||'bb'}">${tl[i.type]||i.type}</span><span class="sr-title">${i.title||'—'}</span><span class="sr-date">${i.date||''}</span><span style="font-size:12px;font-weight:600;color:${i.tx_type==='income'?'var(--cg)':'var(--cr)'}"> ${i.amount?(i.amount.toLocaleString('ru')+' ₽'):''}</span></div>`).join('');
+  }, 300);
+}
+document.addEventListener('keydown', e=>{
+  if ((e.metaKey||e.ctrlKey)&&e.key==='k'){e.preventDefault();openSearch();}
+  if (e.key==='Escape'){closeSearch();closeModal();}
+});
+
+// ══ FILE UPLOAD ═══════════════════════════════════════════════════════════
+function onFile(inp, dropId, prevId) {
+  const f=inp.files[0]; if(!f)return;
+  pendingFiles[dropId]=f;
+  document.getElementById(prevId).style.display='block';
+  document.getElementById(prevId).textContent='📎 '+f.name+' ('+Math.round(f.size/1024)+' KB)';
+}
+async function uploadFile(file, type, id) {
+  const fd=new FormData(); fd.append('file',file); fd.append('type',type); if(id)fd.append('id',String(id));
+  const r=await fetch('/api/upload',{method:'POST',credentials:'include',body:fd});
+  if(!r.ok) return null;
+  return r.json();
+}
+
+// ══ INIT ═════════════════════════════════════════════════════════════════
+async function init() {
+  const now=new Date();
+  const mS=document.getElementById('mSel'), yS=document.getElementById('ySel');
+  MN.forEach((m,i)=>{const o=new Option(m,i+1); if(i===now.getMonth())o.selected=true; mS.add(o);});
+  for(let y=2025;y<=now.getFullYear()+1;y++){const o=new Option(y,y); if(y===now.getFullYear())o.selected=true; yS.add(o);}
+  // Export selectors
+  const em=document.getElementById('exp-m'), ey=document.getElementById('exp-y');
+  MN.forEach((m,i)=>{const o=new Option(m,i+1); if(i===now.getMonth())o.selected=true; em.add(o);});
+  for(let y=2025;y<=now.getFullYear()+1;y++){const o=new Option(y,y); if(y===now.getFullYear())o.selected=true; ey.add(o);}
+  // Heatmap year
+  const hy=document.getElementById('hm-year');
+  for(let y=2025;y<=now.getFullYear();y++){const o=new Option(y,y); if(y===now.getFullYear())o.selected=true; hy.add(o);}
+  // Today date in forms
+  const today=now.toISOString().slice(0,10);
+  ['tx-date','a-date'].forEach(id=>{const el=document.getElementById(id);if(el)el.value=today;});
+  document.getElementById('b-month') && (document.getElementById('b-month').value=now.toISOString().slice(0,7));
+
+  document.querySelectorAll('.nav-i').forEach(el=>el.addEventListener('click',()=>{nav(el.dataset.page);closeSidebar();}));
+  document.getElementById('txForm').addEventListener('submit',submitTx);
+  document.getElementById('adsForm').addEventListener('submit',submitAd);
+  document.getElementById('partnerForm').addEventListener('submit',submitPartner);
+
+  setInterval(()=>{ document.getElementById('clk').textContent=new Date().toLocaleTimeString('ru',{hour:'2-digit',minute:'2-digit',second:'2-digit'}); },1000);
+
+  // Load user + cats + partners then dashboard
+  const [me, catsData, ptrs] = await Promise.all([
+    api('GET','/api/auth/me'),
+    api('GET','/api/categories'),
+    api('GET','/api/partners')
+  ]);
+  if (me && !me.error) { curUser=me; applyRole(); }
+  if (catsData && !catsData.error) { cats=catsData; buildCatSelects(); }
+  if (ptrs && !ptrs.error) { partners=ptrs; buildPartnerSelects(); }
+
+  nav('dashboard');
+}
+
+function applyRole() {
+  if (!curUser) return;
+  const isAdmin = curUser.role==='admin';
+  const isEditor = curUser.role==='admin'||curUser.role==='editor';
+  document.querySelectorAll('.admin-only').forEach(el=>el.style.display=isAdmin?'':'none');
+  if (!isEditor) {
+    document.querySelectorAll('.btn-add,form').forEach(el=>el.style.display='none');
+    document.querySelectorAll('.del-btn').forEach(el=>el.style.display='none');
+  }
+}
+
+function buildCatSelects() {
+  const txCat=document.getElementById('tx-cat');
+  txCat.innerHTML='<option value="">— выбери —</option>';
+  const filterCat=document.getElementById('tx-filter-cat');
+  filterCat.innerHTML='<option value="">Все категории</option>';
+  cats.filter(c=>c.active).forEach(c=>{
+    const opt=new Option(`${c.icon} ${c.name}`,c.id);
+    txCat.add(opt.cloneNode(true));
+    filterCat.add(new Option(`${c.icon} ${c.name}`, c.id));
+  });
+  updateCatForType(txType);
+}
+function updateCatForType(type) {
+  const txCat=document.getElementById('tx-cat');
+  Array.from(txCat.options).forEach(o=>{
+    if (!o.value) return;
+    const c=cats.find(c=>c.id==o.value);
+    o.style.display=(c&&c.type===type)?'':'none';
+  });
+  if (txCat.options[txCat.selectedIndex]?.style.display==='none') txCat.value='';
+}
+function buildPartnerSelects() {
+  const sel=document.getElementById('tx-partner');
+  sel.innerHTML='<option value="">— нет —</option>';
+  partners.filter(p=>p.active).forEach(p=>sel.add(new Option(p.name,p.id)));
+}
+
+// ══ NAV ══════════════════════════════════════════════════════════════════
+function nav(p) {
   curPage=p;
   document.querySelectorAll('.page').forEach(x=>x.classList.remove('on'));
   document.querySelectorAll('.nav-i').forEach(x=>x.classList.remove('on'));
-  const pg=document.getElementById('page-'+p);if(pg)pg.classList.add('on');
-  const ni=document.querySelector('[data-page="'+p+'"]');if(ni)ni.classList.add('on');
-  document.getElementById('pageTitle').textContent=PAGES[p]||p;
-  ({
-    dashboard:loadDashboard, daily:loadDaily, expenses:loadExpenses,
-    investments:loadInvestments, ads:loadAds, stats:loadStats,
-    heatmap:loadHeatmap, budget:loadBudget, distribution:loadDist,
-    partners:renderPartners, receipts:loadReceipts, settings:loadSettings,
-    users:loadUsers, webhook:loadWebhook, audit:loadAudit,
-    io:()=>{}
-  })[p]?.();
+  const pg=document.getElementById('page-'+p); if(pg)pg.classList.add('on');
+  const ni=document.querySelector(`[data-page="${p}"]`); if(ni)ni.classList.add('on');
+  document.getElementById('ptitle').textContent=PAGES[p]||p;
+  ({dashboard:loadDashboard,transactions:loadTransactions,ads:loadAds,stats:loadStats,heatmap:loadHeatmap,partners:renderPartners,receipts:loadReceipts,settings:loadSettings,audit:loadAudit,io:()=>{}})[p]?.();
 }
-function onMC(){nav(curPage)}
+function onMC(){nav(curPage);}
 
-// SPARKLINE
-function sparkline(canvasId,data,color){
-  const canvas=document.getElementById(canvasId);if(!canvas||!data?.length)return;
-  if(charts[canvasId])charts[canvasId].destroy();
-  charts[canvasId]=new Chart(canvas,{type:'line',data:{labels:data.map((_,i)=>i),datasets:[{data,borderColor:color,borderWidth:1.5,tension:.4,pointRadius:0,fill:true,backgroundColor:color.replace(')',',0.08)').replace('rgb','rgba')}]},options:{responsive:false,animation:false,plugins:{legend:{display:false},tooltip:{enabled:false}},scales:{x:{display:false},y:{display:false}}}});
+// ══ SPARKLINE ════════════════════════════════════════════════════════════
+function spark(id, data, color) {
+  const c=document.getElementById(id); if(!c||!data?.length)return;
+  if(charts[id])charts[id].destroy();
+  charts[id]=new Chart(c,{type:'line',data:{labels:data.map((_,i)=>i),datasets:[{data,borderColor:color,borderWidth:1.5,tension:.4,pointRadius:0,fill:true,backgroundColor:color.replace('rgb','rgba').replace(')',',0.08)')}]},options:{responsive:false,animation:false,plugins:{legend:{display:false},tooltip:{enabled:false}},scales:{x:{display:false},y:{display:false}}}});
 }
 
-// DASHBOARD
-async function loadDashboard(){
-  const data=await api('GET',`/api/stats?month=${gM()}&year=${gY()}`);
-  if(!data||data.error)return;
-  const b=data.balance||{};
-  const rev=b.revenue||0,net=b.net||0;
-  document.getElementById('k-rev').textContent=fmt(rev);
-  document.getElementById('k-rev-s').textContent=data.daysPassed+' дней';
-  document.getElementById('k-net').textContent=fmt(net);
-  document.getElementById('k-net').className='kpi-val '+(net>=0?'b':'r');
-  const ae=data.accExp||{};
-  document.getElementById('k-exp').textContent=fmt(ae.total||0);
-  document.getElementById('k-exp-s').textContent=(ae.cnt||0)+' операций';
-  document.getElementById('k-fore').textContent=fmt(data.forecast||0);
-  document.getElementById('k-fore-s').textContent='прогноз на '+data.daysInMonth+' дней';
-
-  // Sparklines from last 14 days
-  const sd=data.sparkData||[];
-  sparkline('sp-rev',sd.map(d=>d.revenue),'rgb(0,245,160)');
-  sparkline('sp-exp',sd.map(d=>d.expense),'rgb(255,48,96)');
-  sparkline('sp-net',sd.map(d=>d.revenue-d.expense),'rgb(0,229,255)');
-  sparkline('sp-fore',sd.map(d=>d.revenue),'rgb(251,191,36)');
-
+// ══ DASHBOARD ════════════════════════════════════════════════════════════
+async function loadDashboard() {
+  const d=await api('GET',`/api/stats?month=${gM()}&year=${gY()}`); if(!d||d.error)return;
+  const kpis=[
+    {id:'k1',label:'Доходы',val:d.income,cls:'g',sub:`${d.daysPassed} дней`},
+    {id:'k2',label:'Расходы',val:d.expense,cls:'r',sub:`Чистый: ${fmt(d.net)}`},
+    {id:'k3',label:'Прогноз',val:d.forecast,cls:'b',sub:`на ${d.daysInMonth} дней`},
+    {id:'k4',label:'Долг инвесторам',val:d.investmentDebt,cls:'o',sub:`Вложено: ${fmt(d.totalInvested)}`},
+    {id:'k5',label:'Реклама (месяц)',val:d.adMonth,cls:'v',sub:`Всего: ${fmt(d.adTotal)}`},
+    {id:'k6',label:'Платежи (месяц)',val:d.paymentsMonth?.total||0,cls:'g',sub:`${d.paymentsMonth?.cnt||0} транзакций`},
+  ];
+  document.getElementById('dash-kpis').innerHTML=kpis.map(k=>`<div class="kpi ${k.cls}"><div class="kpi-label">${k.label}</div><div class="kpi-val ${k.cls}" id="${k.id}">${fmt(k.val)}</div><div class="kpi-sub">${k.sub}</div><div class="kpi-spark"><canvas id="sp-${k.id}" height="24"></canvas></div></div>`).join('');
+  // Sparklines
+  const sp=d.sparkData||[];
+  spark('sp-k1',sp.map(x=>x.income),'rgb(0,245,160)');
+  spark('sp-k2',sp.map(x=>x.expense),'rgb(255,48,96)');
+  spark('sp-k3',sp.map(x=>x.income-x.expense),'rgb(0,229,255)');
   // Partners
   const dp=document.getElementById('dash-partners');
-  if(data.partnerMonthly?.length){
-    dp.innerHTML=data.partnerMonthly.map(p=>`<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--b1)"><span style="display:flex;align-items:center;gap:7px;font-size:12px"><span style="width:8px;height:8px;border-radius:50%;background:${p.color};display:inline-block"></span>${p.name}</span><span style="font-weight:600;color:${p.color}">${fmt(p.month_total)}</span></div>`).join('');
-  }else{dp.innerHTML='<div class="empty">Нет данных</div>'}
-
+  dp.innerHTML=(d.partnerStats||[]).map(p=>`<div style="display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid var(--b1)"><div style="display:flex;align-items:center;gap:7px;font-size:12px"><div style="width:8px;height:8px;border-radius:50%;background:${p.color};flex-shrink:0"></div>${p.name}</div><div style="text-align:right"><div style="font-size:12px;font-weight:600;color:${p.color}">${fmt(p.mExpense)}</div><div style="font-size:9px;color:var(--t3)">всего ${fmt(p.allExpense)}</div></div></div>`).join('')||'<div class="empty">Нет данных</div>';
   // Charts
-  const entries=await api('GET',`/api/daily?month=${gM()}&year=${gY()}`);
-  if(entries&&!entries.error&&entries.length){
-    const sorted=[...entries].sort((a,b)=>a.date.localeCompare(b.date));
+  const monthly=d.monthly||[];
+  if(monthly.length){
     if(charts.cRev)charts.cRev.destroy();
-    charts.cRev=new Chart(document.getElementById('cRev'),{type:'bar',data:{labels:sorted.map(e=>e.date.slice(5)),datasets:[{label:'Доход',data:sorted.map(e=>e.revenue),backgroundColor:'rgba(0,245,160,.45)',borderColor:'#00f5a0',borderWidth:1,borderRadius:3},{label:'Расход',data:sorted.map(e=>e.expense),backgroundColor:'rgba(255,48,96,.35)',borderColor:'#ff3060',borderWidth:1,borderRadius:3}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:'#8892b0',font:{size:10}}}},scales:{x:{ticks:{color:'#4a5068',font:{size:9}},grid:{color:'rgba(255,255,255,.03)'}},y:{ticks:{color:'#4a5068',font:{size:9},callback:v=>(v/1000).toFixed(0)+'k'},grid:{color:'rgba(255,255,255,.05)'}}}}});
-    document.getElementById('recent-body').innerHTML=[...entries].sort((a,b)=>b.date.localeCompare(a.date)).slice(0,5).map(e=>{const n=e.revenue-e.expense;return`<tr><td>${e.date}</td><td class="tg">${fmt(e.revenue)}</td><td class="tr2">${fmt(e.expense)}</td><td class="${n>=0?'tg':'tr2'}">${fmt(n)}</td></tr>`}).join('');
-  }
-  if(data.expByCat?.length){
-    const clrs=['#ff3060','#00e5ff','#fbbf24','#7c3aed','#00f5a0','#f97316','#a78bfa'];
+    charts.cRev=new Chart(document.getElementById('cRev'),{type:'bar',data:{labels:monthly.map(m=>{const[y,mo]=m.month.split('-');return MN[+mo-1]?.slice(0,3)+' '+y.slice(2)}),datasets:[{label:'Доход',data:monthly.map(m=>m.income),backgroundColor:'rgba(0,245,160,.45)',borderColor:'#00f5a0',borderWidth:1,borderRadius:3},{label:'Расход',data:monthly.map(m=>m.expense),backgroundColor:'rgba(255,48,96,.35)',borderColor:'#ff3060',borderWidth:1,borderRadius:3}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:'#8892b0',font:{size:10}}}},scales:{x:{ticks:{color:'#4a5068',font:{size:9}},grid:{color:'rgba(255,255,255,.03)'}},y:{ticks:{color:'#4a5068',font:{size:9},callback:v=>(v/1000).toFixed(0)+'k'},grid:{color:'rgba(255,255,255,.05)'}}}}}); }
+  if(d.expByCat?.length){
+    const clrs=['#ff3060','#00e5ff','#fbbf24','#7c3aed','#00f5a0','#f97316','#a78bfa','#0088cc'];
     if(charts.cCat)charts.cCat.destroy();
-    charts.cCat=new Chart(document.getElementById('cCat'),{type:'doughnut',data:{labels:data.expByCat.map(r=>r.category),datasets:[{data:data.expByCat.map(r=>r.total),backgroundColor:clrs.slice(0,data.expByCat.length),borderWidth:0,hoverOffset:5}]},options:{responsive:true,maintainAspectRatio:false,cutout:'66%',plugins:{legend:{position:'right',labels:{color:'#8892b0',font:{size:10},padding:10}}}}});
+    charts.cCat=new Chart(document.getElementById('cCat'),{type:'doughnut',data:{labels:d.expByCat.map(r=>r.name),datasets:[{data:d.expByCat.map(r=>r.total),backgroundColor:clrs.slice(0,d.expByCat.length),borderWidth:0,hoverOffset:5}]},options:{responsive:true,maintainAspectRatio:false,cutout:'65%',plugins:{legend:{position:'right',labels:{color:'#8892b0',font:{size:10},padding:8,boxWidth:10}}}}}); }
+  // Recent
+  const recent=await api('GET',`/api/transactions?month=${gM()}&year=${gY()}&limit=8`);
+  if(recent&&!recent.error){
+    document.getElementById('recent-body').innerHTML=recent.map(t=>`<tr>
+      <td style="font-size:11px;color:var(--t3)">${t.date}</td>
+      <td><span class="tx-ic ${t.type==='income'?'inc':'exp'}">${t.type==='income'?'▲':'▼'}</span></td>
+      <td style="font-size:11px;color:var(--t2)">${t.description||t.cat_name||'—'}</td>
+      <td class="${t.type==='income'?'tg':'tr2'}">${fmt(t.amount)}</td>
+    </tr>`).join('')||'<tr><td colspan="4" class="empty">Нет операций</td></tr>';
   }
 }
 
-// DAILY
-async function loadDaily(){
-  const rows=await api('GET',`/api/daily?month=${gM()}&year=${gY()}`);
-  if(!rows||rows.error)return;
-  document.getElementById('daily-cnt').textContent=rows.length+' записей';
-  const th=document.getElementById('th-partners');
-  if(th)th.textContent=partners.map(p=>p.name).join(' / ');
-  document.getElementById('daily-body').innerHTML=rows.length?rows.map(e=>{
-    const n=e.revenue-e.expense;
-    const pw=(e.partner_withdrawals||[]).map(p=>`<span style="color:${p.color}">${p.name}: ${fmt(p.amount)}</span>`).join(', ');
-    return`<tr>
-      <td>${e.date}</td>
-      <td class="editable tg" ondblclick="inlineEdit(this,'daily',${e.id},'revenue',${e.revenue})">${fmt(e.revenue)}</td>
-      <td class="editable tr2" ondblclick="inlineEdit(this,'daily',${e.id},'expense',${e.expense})">${fmt(e.expense)}</td>
-      <td class="${n>=0?'tg':'tr2'}">${fmt(n)}</td>
-      <td style="font-size:11px;max-width:180px">${pw||'—'}</td>
-      <td style="color:var(--t3);font-size:11px;max-width:120px">${e.note||'—'}</td>
-      <td><button class="del-btn" onclick="del('daily',${e.id})">✕</button></td>
-    </tr>`;
-  }).join(''):`<tr><td colspan="7" class="empty">Нет записей</td></tr>`;
+// ══ TRANSACTIONS ══════════════════════════════════════════════════════════
+function setTxType(type) {
+  txType=type;
+  document.getElementById('tx-type-label').textContent=type==='income'?'▲ Доход':'▼ Расход';
+  document.getElementById('tx-type-label').style.color=type==='income'?'var(--cg)':'var(--cr)';
+  document.getElementById('btn-inc').style.borderColor=type==='income'?'var(--cg)':'var(--b2)';
+  document.getElementById('btn-inc').style.color=type==='income'?'var(--cg)':'var(--t2)';
+  document.getElementById('btn-exp').style.borderColor=type==='expense'?'var(--cr)':'var(--b2)';
+  document.getElementById('btn-exp').style.color=type==='expense'?'var(--cr)':'var(--t2)';
+  updateCatForType(type);
 }
-async function submitDaily(ev){
-  ev.preventDefault();
-  const pw=[];
-  document.querySelectorAll('#daily-partners-fields input').forEach(inp=>{const v=+inp.value||0;if(v>0)pw.push({partner_id:+inp.dataset.pid,amount:v,type:inp.dataset.ptype})});
-  const r=await api('POST','/api/daily',{date:document.getElementById('d-date').value,revenue:+document.getElementById('d-rev').value||0,expense:+document.getElementById('d-exp').value||0,note:document.getElementById('d-note').value,partner_withdrawals:pw});
-  if(r?.ok){toast('Сохранено');loadDaily();loadDashboard()}else toast(r?.error||'Ошибка','error');
-}
-
-// EXPENSES
-async function loadExpenses(){
-  const rows=await api('GET',`/api/expenses?month=${gM()}&year=${gY()}`);
-  if(!rows||rows.error)return;
-  document.getElementById('exp-total').textContent='Итого: '+fmt(rows.reduce((s,e)=>s+e.amount,0));
-  document.getElementById('expense-body').innerHTML=rows.length?rows.map(e=>{
-    const rc=e.receipt_file?`<a href="/uploads/${e.receipt_file}" target="_blank"><img src="/uploads/${e.receipt_file}" style="width:32px;height:32px;object-fit:cover;border-radius:4px;border:1px solid var(--b2)" onerror="this.style.display='none'"></a>`:e.receipt_url?`<a href="${e.receipt_url}" target="_blank" style="color:var(--c);font-size:10px">→ чек</a>`:'—';
+async function loadTransactions() {
+  const type=document.getElementById('tx-filter-type').value;
+  const catId=document.getElementById('tx-filter-cat').value;
+  const params=new URLSearchParams({month:gM(),year:gY()});
+  if(type)params.set('type',type);
+  if(catId)params.set('category_id',catId);
+  const rows=await api('GET',`/api/transactions?${params}`); if(!rows||rows.error)return;
+  const inc=rows.filter(r=>r.type==='income').reduce((s,r)=>s+r.amount,0);
+  const exp=rows.filter(r=>r.type==='expense').reduce((s,r)=>s+r.amount,0);
+  document.getElementById('tx-totals').textContent=`▲ ${fmt(inc)}  ▼ ${fmt(exp)}  = ${fmt(inc-exp)}`;
+  document.getElementById('tx-body').innerHTML=rows.length?rows.map(t=>{
+    const rc=t.receipt_file?`<a href="/uploads/${t.receipt_file}" target="_blank"><img src="/uploads/${t.receipt_file}" style="width:28px;height:28px;object-fit:cover;border-radius:4px;border:1px solid var(--b2)" onerror="this.style.display='none'"></a>`:t.receipt_url?`<a href="${t.receipt_url}" target="_blank" style="color:var(--c);font-size:10px">→</a>`:'—';
     return`<tr>
-      <td>${e.date}</td>
-      <td><span class="badge ${catCls(e.category)}">${e.category}</span></td>
-      <td class="editable" ondblclick="inlineEdit(this,'expenses',${e.id},'description','${e.description.replace(/'/g,"\\'")}',true)">${e.description}</td>
-      <td class="editable tr2" ondblclick="inlineEdit(this,'expenses',${e.id},'amount',${e.amount})">${fmt(e.amount)}</td>
+      <td class="ed" ondblclick="inlineEdit(this,'transactions',${t.id},'date','${t.date}',true)" style="font-size:11px;color:var(--t3)">${t.date}</td>
+      <td><span class="tx-ic ${t.type==='income'?'inc':'exp'}">${t.type==='income'?'▲':'▼'}</span></td>
+      <td><span style="font-size:10px;color:${t.cat_color||'var(--t3)'}">${t.cat_icon||''} ${t.cat_name||'—'}</span></td>
+      <td class="ed" ondblclick="inlineEdit(this,'transactions',${t.id},'description','${(t.description||'').replace(/'/g,"\\'")}',true)" style="font-size:11px">${t.description||'—'}</td>
+      <td>${t.partner_name?`<span style="font-size:10px;color:${t.partner_color}">${t.partner_name}</span>`:'—'}</td>
+      <td class="ed ${t.type==='income'?'tg':'tr2'}" ondblclick="inlineEdit(this,'transactions',${t.id},'amount',${t.amount})">${fmt(t.amount)}</td>
       <td>${rc}</td>
-      <td><button class="del-btn" onclick="del('expenses',${e.id})">✕</button></td>
+      <td><button class="del-btn" onclick="del('transactions',${t.id})">✕</button></td>
     </tr>`;
-  }).join(''):`<tr><td colspan="6" class="empty">Нет расходов</td></tr>`;
+  }).join(''):`<tr><td colspan="8" class="empty">Нет операций за выбранный период</td></tr>`;
 }
-async function submitExpense(ev){
+async function submitTx(ev) {
   ev.preventDefault();
-  const body={date:document.getElementById('e-date').value,category:document.getElementById('e-cat').value,description:document.getElementById('e-desc').value,amount:+document.getElementById('e-amt').value,receipt_url:document.getElementById('e-url').value};
-  const r=await api('POST','/api/expenses',body);
-  if(!r?.ok){toast(r?.error||'Ошибка','error');return}
-  if(pendingFiles['e-drop']){const up=await uploadFile(pendingFiles['e-drop'],'expense',r.id);if(up?.ok){pendingFiles['e-drop']=null;document.getElementById('e-prev').style.display='none'}}
-  toast('Расход добавлен');loadExpenses();ev.target.reset();document.getElementById('e-date').value=new Date().toISOString().slice(0,10);
+  const body={ date:document.getElementById('tx-date').value, type:txType, amount:+document.getElementById('tx-amount').value, category_id:document.getElementById('tx-cat').value||null, partner_id:document.getElementById('tx-partner').value||null, description:document.getElementById('tx-desc').value, receipt_url:document.getElementById('tx-url').value, note:document.getElementById('tx-note').value };
+  const r=await api('POST','/api/transactions',body);
+  if(!r?.ok){toast(r?.error||'Ошибка','error');return;}
+  if(pendingFiles['tx-drop']){await uploadFile(pendingFiles['tx-drop'],'transaction',r.id);pendingFiles['tx-drop']=null;document.getElementById('tx-prev').style.display='none';}
+  toast('Операция сохранена');loadTransactions();loadDashboard();
+  document.getElementById('tx-amount').value='';document.getElementById('tx-desc').value='';document.getElementById('tx-url').value='';document.getElementById('tx-note').value='';
 }
 
-// ADS
-async function loadAds(){
-  const rows=await api('GET',`/api/ads?month=${gM()}&year=${gY()}`);
-  if(!rows||rows.error)return;
-  document.getElementById('ads-total').textContent='Потрачено: '+fmt(rows.reduce((s,e)=>s+e.amount,0));
-  document.getElementById('ads-body').innerHTML=rows.length?rows.map(e=>{
-    const cps=e.subscribers_gain>0?(e.amount/e.subscribers_gain).toFixed(2)+' ₽':'—';
-    const sc=e.screenshot_file?`<a href="/uploads/${e.screenshot_file}" target="_blank"><img src="/uploads/${e.screenshot_file}" style="width:32px;height:32px;object-fit:cover;border-radius:4px" onerror="this.style.display='none'"></a>`:e.screenshot_url?`<a href="${e.screenshot_url}" target="_blank" style="color:var(--c);font-size:10px">🖼</a>`:'—';
-    return`<tr>
-      <td>${e.date}</td>
-      <td><span class="badge bb">${e.format||'—'}</span></td>
-      <td>${e.name}</td>
-      <td class="editable to" ondblclick="inlineEdit(this,'ads',${e.id},'amount',${e.amount})">${fmt(e.amount)}</td>
-      <td class="editable tg" ondblclick="inlineEdit(this,'ads',${e.id},'subscribers_gain',${e.subscribers_gain},false,true)">${e.subscribers_gain||0}</td>
-      <td class="tb2">${cps}</td>
-      <td>${sc}</td>
-      <td><button class="del-btn" onclick="del('ads',${e.id})">✕</button></td>
-    </tr>`;
+// ══ ADS ═══════════════════════════════════════════════════════════════════
+async function loadAds() {
+  const rows=await api('GET',`/api/ads?month=${gM()}&year=${gY()}`); if(!rows||rows.error)return;
+  document.getElementById('ads-total').textContent='Потрачено: '+fmt(rows.reduce((s,r)=>s+r.amount,0));
+  document.getElementById('ads-body').innerHTML=rows.length?rows.map(a=>{
+    const cps=a.subscribers_gain>0?(a.amount/a.subscribers_gain).toFixed(2)+' ₽':'—';
+    const sc=a.screenshot_file?`<a href="/uploads/${a.screenshot_file}" target="_blank"><img src="/uploads/${a.screenshot_file}" style="width:28px;height:28px;object-fit:cover;border-radius:4px" onerror="this.style.display='none'"></a>`:a.screenshot_url?`<a href="${a.screenshot_url}" target="_blank" style="color:var(--c);font-size:10px">🖼</a>`:'—';
+    return`<tr><td style="font-size:11px;color:var(--t3)">${a.date}</td><td><span class="badge bb">${a.format||'—'}</span></td><td style="font-size:11px">${a.name}</td><td class="ed to" ondblclick="inlineEdit(this,'ads',${a.id},'amount',${a.amount})">${fmt(a.amount)}</td><td class="tg">${a.subscribers_gain||0}</td><td class="tb2">${cps}</td><td>${sc}</td><td><button class="del-btn" onclick="del('ads',${a.id})">✕</button></td></tr>`;
   }).join(''):`<tr><td colspan="8" class="empty">Нет кампаний</td></tr>`;
   // ROI chart
   const roi=await api('GET',`/api/ads/roi?year=${gY()}`);
   if(roi&&!roi.error&&roi.length){
-    const labels=roi.map(r=>{const[y,m]=r.month.split('-');return MN[+m-1]?.slice(0,3)});
     if(charts.cROI)charts.cROI.destroy();
-    charts.cROI=new Chart(document.getElementById('cROI'),{type:'bar',data:{labels,datasets:[{label:'Расходы на рекламу',data:roi.map(r=>r.ad_spend),backgroundColor:'rgba(249,115,22,.5)',borderColor:'#f97316',borderWidth:1,borderRadius:3,yAxisID:'y'},{label:'Выручка',data:roi.map(r=>r.revenue),backgroundColor:'rgba(0,245,160,.2)',borderColor:'#00f5a0',borderWidth:1.5,type:'line',tension:.4,pointRadius:3,yAxisID:'y'}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:'#8892b0',font:{size:10}}}},scales:{x:{ticks:{color:'#4a5068',font:{size:9}},grid:{color:'rgba(255,255,255,.03)'}},y:{ticks:{color:'#4a5068',font:{size:9},callback:v=>(v/1000).toFixed(0)+'k ₽'},grid:{color:'rgba(255,255,255,.05)'}}}}});
-  }
+    charts.cROI=new Chart(document.getElementById('cROI'),{type:'bar',data:{labels:roi.map(r=>{const[y,m]=r.month.split('-');return MN[+m-1]?.slice(0,3)}),datasets:[{label:'Реклама ₽',data:roi.map(r=>r.ad_spend),backgroundColor:'rgba(249,115,22,.5)',borderColor:'#f97316',borderWidth:1,borderRadius:3},{label:'Доход ₽',data:roi.map(r=>r.revenue),type:'line',borderColor:'#00f5a0',backgroundColor:'rgba(0,245,160,.1)',tension:.4,pointRadius:3,pointBackgroundColor:'#00f5a0'}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:'#8892b0',font:{size:10}}}},scales:{x:{ticks:{color:'#4a5068',font:{size:9}},grid:{color:'rgba(255,255,255,.03)'}},y:{ticks:{color:'#4a5068',font:{size:9},callback:v=>(v/1000).toFixed(0)+'k'},grid:{color:'rgba(255,255,255,.05)'}}}}}); }
 }
-async function submitAds(ev){
+async function submitAd(ev) {
   ev.preventDefault();
-  const body={date:document.getElementById('a-date').value,format:document.getElementById('a-fmt').value,amount:+document.getElementById('a-amt').value,name:document.getElementById('a-name').value,subscribers_gain:+document.getElementById('a-subs').value||0,channel_url:document.getElementById('a-ch').value,screenshot_url:document.getElementById('a-sc').value};
+  const body={date:document.getElementById('a-date').value,format:document.getElementById('a-fmt').value,amount:+document.getElementById('a-amt').value,name:document.getElementById('a-name').value,subscribers_gain:+document.getElementById('a-subs').value||0,channel_url:document.getElementById('a-ch').value,screenshot_url:''};
   const r=await api('POST','/api/ads',body);
-  if(!r?.ok){toast(r?.error||'Ошибка','error');return}
-  if(pendingFiles['a-drop']){await uploadFile(pendingFiles['a-drop'],'ad',r.id);pendingFiles['a-drop']=null;document.getElementById('a-prev').style.display='none'}
+  if(!r?.ok){toast(r?.error||'Ошибка','error');return;}
+  if(pendingFiles['a-drop']){const up=await uploadFile(pendingFiles['a-drop'],'ad',r.id);if(up?.ok){await api('PATCH',`/api/ads/${r.id}`,{screenshot_url:`/uploads/${up.filename}`});pendingFiles['a-drop']=null;document.getElementById('a-prev').style.display='none';}}
   toast('Реклама добавлена');loadAds();ev.target.reset();document.getElementById('a-date').value=new Date().toISOString().slice(0,10);
 }
 
-// INVESTMENTS
-async function loadInvestments(){
-  const summary=await api('GET','/api/investor-summary');
-  const tk=document.getElementById('inv-tracker');
-  if(summary&&!summary.error&&summary.length){
-    tk.innerHTML=`<div class="g${Math.min(summary.length,3)}" style="grid-template-columns:repeat(${Math.min(summary.length,3)},1fr)">${summary.map(p=>{const pct=p.invested>0?Math.min(p.returned/p.invested*100,100):0;return`<div class="panel"><div class="ph"><span class="ph-title" style="color:${p.color}">💼 ${p.name}</span></div><div class="pb"><div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:5px"><span style="color:var(--t3)">Вложено</span><span class="to">${fmt(p.invested)}</span></div><div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:5px"><span style="color:var(--t3)">Вернули</span><span class="tg">${fmt(p.returned)}</span></div><div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:8px"><span style="color:var(--t3)">Долг</span><span class="tr2">${fmt(p.remaining)}</span></div><div style="font-size:10px;color:var(--t3);margin-bottom:4px">Возврат: ${pct.toFixed(1)}%</div><div class="inv-bg"><div class="inv-bar" style="width:${pct}%;background:${p.color}"></div></div></div></div>`}).join('')}</div>`;
-  }else{tk.innerHTML=''}
-  const rows=await api('GET',`/api/investments?month=${gM()}&year=${gY()}`);
-  if(!rows||rows.error)return;
-  const typeMap={invested:{l:'Вложено',c:'bo'},returned:{l:'Возврат',c:'bg'},expense:{l:'Расход',c:'br'}};
-  document.getElementById('inv-body').innerHTML=rows.length?rows.map(e=>{const t=typeMap[e.type]||{l:e.type,c:'bb'};return`<tr><td>${e.date}</td><td>${e.partner_name?`<span style="color:${e.partner_color}">${e.partner_name}</span>`:'—'}</td><td><span class="badge ${t.c}">${t.l}</span></td><td>${e.category||'—'}</td><td class="${e.type==='invested'?'to':e.type==='returned'?'tg':'tr2'}">${fmt(e.amount)}</td><td>${e.receipt_url?`<a href="${e.receipt_url}" target="_blank" style="color:var(--c);font-size:10px">→</a>`:'—'}</td><td><button class="del-btn" onclick="del('investments',${e.id})">✕</button></td></tr>`}).join(''):`<tr><td colspan="7" class="empty">Нет операций</td></tr>`;
-}
-async function submitInv(ev){
-  ev.preventDefault();
-  const r=await api('POST','/api/investments',{date:document.getElementById('i-date').value,partner_id:document.getElementById('i-partner').value||null,type:document.getElementById('i-type').value,category:document.getElementById('i-cat').value||null,amount:+document.getElementById('i-amt').value,receipt_url:document.getElementById('i-url').value,note:document.getElementById('i-note').value});
-  if(r?.ok){toast('Добавлено');loadInvestments();ev.target.reset();document.getElementById('i-date').value=new Date().toISOString().slice(0,10)}else toast(r?.error||'Ошибка','error');
-}
-
-// STATS
-async function loadStats(){
-  const data=await api('GET','/api/stats');if(!data||data.error)return;
-  const months=data.monthly||[];
+// ══ STATS ═════════════════════════════════════════════════════════════════
+async function loadStats() {
+  const d=await api('GET','/api/stats'); if(!d||d.error)return;
+  const months=d.monthly||[];
   if(months.length){
     if(charts.cM)charts.cM.destroy();
-    charts.cM=new Chart(document.getElementById('cMonthly'),{type:'line',data:{labels:months.map(m=>{const[y,mo]=m.month.split('-');return MN[+mo-1]?.slice(0,3)+' '+y.slice(2)}),datasets:[{label:'Выручка',data:months.map(m=>m.total_revenue),borderColor:'#00f5a0',backgroundColor:'rgba(0,245,160,.06)',tension:.4,fill:true,pointRadius:4,pointBackgroundColor:'#00f5a0'},{label:'Расход',data:months.map(m=>m.total_expense),borderColor:'#ff3060',backgroundColor:'rgba(255,48,96,.04)',tension:.4,fill:true,pointRadius:4,pointBackgroundColor:'#ff3060'}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:'#8892b0',font:{size:11}}}},scales:{x:{ticks:{color:'#4a5068'},grid:{color:'rgba(255,255,255,.04)'}},y:{ticks:{color:'#4a5068',callback:v=>(v/1000).toFixed(0)+'k ₽'},grid:{color:'rgba(255,255,255,.05)'}}}}});
+    charts.cM=new Chart(document.getElementById('cMonthly'),{type:'line',data:{labels:months.map(m=>{const[y,mo]=m.month.split('-');return MN[+mo-1]?.slice(0,3)+' '+y.slice(2)}),datasets:[{label:'Доходы',data:months.map(m=>m.income),borderColor:'#00f5a0',backgroundColor:'rgba(0,245,160,.06)',tension:.4,fill:true,pointRadius:4,pointBackgroundColor:'#00f5a0'},{label:'Расходы',data:months.map(m=>m.expense),borderColor:'#ff3060',backgroundColor:'rgba(255,48,96,.04)',tension:.4,fill:true,pointRadius:4,pointBackgroundColor:'#ff3060'}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:'#8892b0',font:{size:11}}}},scales:{x:{ticks:{color:'#4a5068'},grid:{color:'rgba(255,255,255,.04)'}},y:{ticks:{color:'#4a5068',callback:v=>(v/1000).toFixed(0)+'k ₽'},grid:{color:'rgba(255,255,255,.05)'}}}}});
   }
   document.getElementById('stats-body').innerHTML=months.map(m=>{
-    const net=m.total_revenue-m.total_expense,prev=months[months.indexOf(m)-1];
-    const gp=prev&&prev.total_revenue>0?((m.total_revenue-prev.total_revenue)/prev.total_revenue*100).toFixed(1):null;
+    const net=m.income-m.expense,prev=months[months.indexOf(m)-1];
+    const gp=prev&&prev.income>0?((m.income-prev.income)/prev.income*100).toFixed(1):null;
     const[y,mo]=m.month.split('-');
-    return`<tr><td class="tb2">${MN[+mo-1]} ${y}</td><td class="tg">${fmt(m.total_revenue)}</td><td style="color:${gp===null?'var(--t3)':+gp>=0?'var(--cg)':'var(--cr)'};font-weight:600">${gp===null?'—':(+gp>=0?'+':'')+gp+'%'}</td><td class="tr2">${fmt(m.total_expense)}</td><td class="${net>=0?'tg':'tr2'}">${fmt(net)}</td><td>${fmt(m.avg_daily)}</td></tr>`;
-  }).join('')||`<tr><td colspan="6" class="empty">Нет данных</td></tr>`;
+    return`<tr><td class="tb2">${MN[+mo-1]} ${y}</td><td class="tg">${fmt(m.income)}</td><td style="color:${gp===null?'var(--t3)':+gp>=0?'var(--cg)':'var(--cr)'};font-weight:600">${gp===null?'—':(+gp>=0?'+':'')+gp+'%'}</td><td class="tr2">${fmt(m.expense)}</td><td class="${net>=0?'tg':'tr2'}">${fmt(net)}</td></tr>`;
+  }).join('')||'<tr><td colspan="5" class="empty">Нет данных</td></tr>';
   const kpis=await api('GET','/api/monthly-stats');
-  document.getElementById('kpi-body').innerHTML=(kpis||[]).map(k=>`<tr><td class="tb2">${k.month}</td><td>${k.avg_check?fmt(k.avg_check):'—'}</td><td>${fmtN(k.payment_count)}</td><td>${k.refunds?fmt(k.refunds):'—'}</td><td>${fmtN(k.online_users)}</td><td>${fmtN(k.channel_subscribers)}</td></tr>`).join('')||`<tr><td colspan="6" class="empty">Нет данных</td></tr>`;
+  document.getElementById('kpi-body').innerHTML=(kpis||[]).map(k=>`<tr><td class="tb2">${k.month}</td><td>${k.avg_check?(k.avg_check.toLocaleString('ru')+' ₽'):'—'}</td><td>${k.payment_count||'—'}</td><td>${k.online_users||'—'}</td><td>${k.channel_subscribers||'—'}</td></tr>`).join('')||'<tr><td colspan="5" class="empty">Нет данных</td></tr>';
 }
 function openKpiModal(){
   const now=new Date(),mv=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
   const m=document.getElementById('modal');m.style.display='flex';
-  m.innerHTML=`<div style="position:fixed;inset:0;background:rgba(0,0,0,.75);display:flex;align-items:center;justify-content:center;" onclick="closeModal()"><div class="modal-box" onclick="event.stopPropagation()"><div class="modal-title">Добавить ручные KPI</div><div class="fg"><div class="fr"><div class="fi"><label>Месяц</label><input type="month" id="km" value="${mv}"></div><div class="fi"><label>Ср.чек ₽</label><input type="number" id="kac" step="0.01"></div></div><div class="fr"><div class="fi"><label>Оплат</label><input type="number" id="kpc"></div><div class="fi"><label>Возвр. ₽</label><input type="number" id="kref" step="0.01"></div><div class="fi"><label>Онлайн</label><input type="number" id="konl"></div><div class="fi"><label>Подп.</label><input type="number" id="ksub"></div></div></div><div class="modal-actions"><button class="btn-sm" onclick="closeModal()">Отмена</button><button class="btn-add" onclick="saveKpi()">Сохранить</button></div></div></div>`;
+  m.innerHTML=`<div style="position:fixed;inset:0;display:flex;align-items:center;justify-content:center;padding:16px" onclick="closeModal()"><div class="modal-box" onclick="event.stopPropagation()"><div class="modal-title">KPI</div><div class="fg"><div class="fr"><div class="fi"><label>Месяц</label><input type="month" id="km" value="${mv}"></div><div class="fi"><label>Ср.чек</label><input type="number" id="kac"></div></div><div class="fr"><div class="fi"><label>Оплат</label><input type="number" id="kpc"></div><div class="fi"><label>Онлайн</label><input type="number" id="konl"></div><div class="fi"><label>Подп.</label><input type="number" id="ksub"></div></div></div><div class="modal-actions"><button class="btn-sm" onclick="closeModal()">Отмена</button><button class="btn-add" onclick="saveKpi()">Сохранить</button></div></div></div>`;
 }
-async function saveKpi(){const r=await api('POST','/api/monthly-stats',{month:document.getElementById('km').value,avg_check:+document.getElementById('kac').value||null,payment_count:+document.getElementById('kpc').value||null,refunds:+document.getElementById('kref').value||null,online_users:+document.getElementById('konl').value||null,channel_subscribers:+document.getElementById('ksub').value||null});if(r?.ok){toast('KPI сохранены');closeModal();loadStats()}else toast(r?.error||'Ошибка','error')}
+async function saveKpi(){const r=await api('POST','/api/monthly-stats',{month:document.getElementById('km').value,avg_check:+document.getElementById('kac').value||null,payment_count:+document.getElementById('kpc').value||null,online_users:+document.getElementById('konl').value||null,channel_subscribers:+document.getElementById('ksub').value||null});if(r?.ok){toast('Сохранено');closeModal();loadStats();}else toast(r?.error||'Ошибка','error');}
 
-// HEATMAP
-async function loadHeatmap(){
+// ══ HEATMAP ══════════════════════════════════════════════════════════════
+async function loadHeatmap() {
   const year=document.getElementById('hm-year')?.value||new Date().getFullYear();
-  const rows=await api('GET',`/api/heatmap?year=${year}`);
-  if(!rows||rows.error)return;
-  const map={};for(const r of rows)map[r.date]=r.revenue;
+  const rows=await api('GET',`/api/heatmap?year=${year}`); if(!rows||rows.error)return;
+  const map={}; for(const r of rows)map[r.date]=r.revenue;
   const maxRev=Math.max(...Object.values(map),1);
-  const container=document.getElementById('heatmap-container');
-  if(!container)return;
-  const DAYS=['Вс','Пн','Вт','Ср','Чт','Пт','Сб'];
-  const colors=['#161620','#0d2e2a','#0a5c4e','#069e7e','#00f5a0'];
-  function getColor(v){if(!v)return colors[0];const pct=v/maxRev;if(pct<.1)return colors[1];if(pct<.3)return colors[2];if(pct<.6)return colors[3];return colors[4]}
+  const colors=['#161620','#0d3020','#0a5c3e','#069e6e','#00f5a0'];
+  function getColor(v){if(!v)return colors[0];const p=v/maxRev;if(p<.1)return colors[1];if(p<.3)return colors[2];if(p<.6)return colors[3];return colors[4];}
   const jan1=new Date(year,0,1);
   const firstDow=jan1.getDay();
-  const totalDays=((year%4===0&&year%100!==0)||year%400===0)?366:365;
-  // Build cells
-  let cells='',monthLabels='',lastMonth=-1,weekCol=0,colWidth=16;
-  let html=`<div style="display:flex;margin-bottom:2px">`;
-  html+=`<div style="width:24px"></div><div style="flex:1;display:flex;overflow:hidden">`;
-  // month labels
-  const months=[];for(let d=0;d<totalDays;d++){const dt=new Date(year,0,d+1);const mo=dt.getMonth();const dow=dt.getDay();if(dow===0||d===0){if(mo!==lastMonth){months.push({col:Math.floor((d+firstDow)/7),label:MN[mo]?.slice(0,3)});lastMonth=mo}}}
-  html+=months.map(m=>`<div style="position:absolute;left:${m.col*colWidth}px;font-size:9px;color:var(--t3)">${m.label}</div>`).join('');
-  const totalWeeks=Math.ceil((totalDays+firstDow)/7);
-  html+=`</div></div>`;
-  html+=`<div style="display:flex">`;
-  html+=`<div style="width:24px;display:grid;grid-template-rows:repeat(7,${colWidth-2}px);gap:2px;margin-right:2px">`;
-  html+=DAYS.map(d=>`<div style="font-size:9px;color:var(--t3);display:flex;align-items:center;height:${colWidth-2}px">${d}</div>`).join('');
-  html+=`</div>`;
-  html+=`<div style="display:grid;grid-template-rows:repeat(7,${colWidth-2}px);grid-auto-flow:column;gap:2px">`;
-  for(let dow=0;dow<firstDow;dow++)html+=`<div></div>`;
-  for(let d=0;d<totalDays;d++){
-    const dt=new Date(year,0,d+1);
-    const ds=dt.toISOString().slice(0,10);
-    const v=map[ds]||0;
-    const tip=ds+(v>0?' — '+v.toLocaleString('ru')+' ₽':'');
-    html+=`<div class="hm-cell" style="width:${colWidth-2}px;height:${colWidth-2}px;background:${getColor(v)}" title="${tip}"></div>`;
-  }
-  html+=`</div></div>`;
-  container.innerHTML=html;
+  const totalDays=new Date(year,11,31).getDOY?((new Date(year,11,31)-jan1)/86400000+1):(new Date(year+1,0,1)-jan1)/86400000;
+  let html='<div style="display:flex;margin-bottom:3px;padding-left:20px">';
+  // Month labels
+  const months=[];let lastMo=-1;
+  for(let d=0;d<totalDays;d++){const dt=new Date(year,0,d+1);const mo=dt.getMonth();const col=Math.floor((d+firstDow)/7);if((dt.getDay()===0||d===0)&&mo!==lastMo){months.push({col,label:MN[mo]?.slice(0,3)});lastMo=mo;}}
+  html+='<div style="position:relative;height:14px;width:'+(Math.ceil((totalDays+firstDow)/7)*15)+'px">';
+  html+=months.map(m=>`<div style="position:absolute;left:${m.col*15}px;font-size:9px;color:var(--t3);white-space:nowrap">${m.label}</div>`).join('');
+  html+='</div></div><div style="display:flex">';
+  html+='<div style="display:grid;grid-template-rows:repeat(7,13px);gap:2px;margin-right:4px">';
+  ['','Пн','','Ср','','Пт',''].forEach(d=>html+=`<div style="font-size:9px;color:var(--t3);height:13px;display:flex;align-items:center">${d}</div>`);
+  html+='</div><div class="hm-grid">';
+  for(let i=0;i<firstDow;i++)html+='<div></div>';
+  for(let d=0;d<totalDays;d++){const dt=new Date(year,0,d+1);const ds=dt.toISOString().slice(0,10);const v=map[ds]||0;html+=`<div class="hm-cell" style="background:${getColor(v)}" title="${ds}${v>0?' — '+v.toLocaleString('ru')+' ₽':''}"></div>`;}
+  html+='</div></div>';
+  document.getElementById('hm-wrap').innerHTML=html;
 }
 
-// BUDGET
-async function loadBudget(){
-  const now=new Date(),prefix=`${gY()}-${String(gM()).padStart(2,'0')}`;
-  const budgets=await api('GET',`/api/budgets?month=${prefix}`);
-  const stats=await api('GET',`/api/stats?month=${gM()}&year=${gY()}`);
-  const fact={revenue:stats?.balance?.revenue||0,expense:stats?.accExp?.total||0};
-  const catFact={};for(const c of stats?.expByCat||[])catFact[c.category]=c.total;
-  const bMap={};for(const b of budgets||[])bMap[b.type]=b.amount;
-  const bd=document.getElementById('budget-fact');
-  if(!bd)return;
-  const rows=[
-    {label:'Выручка',type:'revenue',plan:bMap['revenue']||0,fact:fact.revenue,positive:true},
-    {label:'Расходы (итого)',type:'expense',plan:bMap['expense']||0,fact:fact.expense,positive:false},
-    {label:'Реклама',type:'cat_Реклама',plan:bMap['cat_Реклама']||0,fact:catFact['Реклама']||0,positive:false},
-    {label:'Сервера',type:'cat_Сервера',plan:bMap['cat_Сервера']||0,fact:catFact['Сервера']||0,positive:false},
-    {label:'LeadTex',type:'cat_LeadTex',plan:bMap['cat_LeadTex']||0,fact:catFact['LeadTex']||0,positive:false},
-    {label:'ФНС',type:'cat_ФНС',plan:bMap['cat_ФНС']||0,fact:catFact['ФНС']||0,positive:false},
-  ].filter(r=>r.plan>0||r.fact>0);
-  if(!rows.length){bd.innerHTML='<div class="empty">Установи план слева</div>';return}
-  bd.innerHTML=rows.map(r=>{
-    const pct=r.plan>0?Math.min(r.fact/r.plan*100,120):0;
-    const ok=(r.positive&&r.fact>=r.plan)||(!r.positive&&r.fact<=r.plan)||r.plan===0;
-    const clr=r.plan===0?'var(--t3)':ok?'var(--cg)':'var(--cr)';
-    const diff=r.fact-r.plan;
-    return`<div class="bgt-row">
-      <div style="font-size:12px">${r.label}</div>
-      <div><div class="bgt-bar-bg"><div class="bgt-bar" style="width:${pct}%;background:${clr}"></div></div></div>
-      <div style="font-size:11px;color:var(--t2);text-align:right">${fmt(r.fact)}</div>
-      <div style="font-size:11px;font-weight:600;color:${clr};text-align:right">${r.plan>0?(diff>=0?'+':'')+diff.toLocaleString('ru')+' ₽':'—'}</div>
-    </div>`;
-  }).join('');
-}
-async function submitBudget(ev){
-  ev.preventDefault();
-  const m=document.getElementById('b-month').value;
-  const fields=[['revenue','b-rev'],['expense','b-exp'],['cat_Реклама','b-adv'],['cat_Сервера','b-srv'],['cat_LeadTex','b-ltx'],['cat_ФНС','b-fns']];
-  for(const[type,id] of fields){const v=+document.getElementById(id).value||0;if(v>0)await api('POST','/api/budgets',{month:m,type,amount:v})}
-  toast('План сохранён');loadBudget();
-}
-
-// DISTRIBUTION
-async function loadDist(){
-  const rows=await api('GET',`/api/daily?month=${gM()}&year=${gY()}`);
-  const all=(rows&&!rows.error)?rows.flatMap(e=>(e.partner_withdrawals||[]).map(pw=>({...pw,date:e.date}))):[];
-  all.sort((a,b)=>b.date?.localeCompare(a.date));
-  const typeMap={withdrawal:'Снятие',dividend:'Дивиденд',investment_return:'Возврат инв.'};
-  document.getElementById('payouts-body').innerHTML=all.slice(0,20).map(pw=>`<tr><td>${pw.date}</td><td style="color:${pw.color}">${pw.name}</td><td><span class="badge ${pw.type==='investment_return'?'bo':pw.type==='dividend'?'bv':'bb'}">${typeMap[pw.type]||pw.type}</span></td><td class="tb2">${fmt(pw.amount)}</td></tr>`).join('')||`<tr><td colspan="4" class="empty">Нет выплат</td></tr>`;
-}
-async function useNet(){const d=await api('GET',`/api/stats?month=${gM()}&year=${gY()}`);if(d?.balance?.net){document.getElementById('dist-p').value=Math.max(0,d.balance.net).toFixed(2);calcDist()}}
-async function calcDist(){
-  const profit=+document.getElementById('dist-p').value;
-  if(!profit||profit<=0){toast('Введи положительную сумму','error');return}
-  const r=await api('POST','/api/distribution/calculate',{net_profit:profit});
-  if(!r||r.error){toast(r?.error||'Ошибка','error');return}
-  pendingDist=r;
-  const div=document.getElementById('dist-result');div.style.display='block';
-  div.innerHTML=r.distribution.map(p=>`<div class="dist-row"><div style="width:9px;height:9px;border-radius:50%;background:${p.color};flex-shrink:0"></div><div style="flex:1;font-size:12px">${p.name}</div><div style="font-size:11px;color:var(--t3)">${p.pct}%</div><div style="font-size:13px;font-weight:700;color:var(--c)">${fmt(p.amount)}</div></div>`).join('')
-    +`<div style="margin-top:9px;padding-top:9px;border-top:1px solid var(--b2);display:flex;justify-content:space-between;font-size:11px;color:var(--t3)"><span>Нераспределено</span><span style="color:var(--t1)">${fmt(r.undistributed)}</span></div>`;
-  document.getElementById('dist-apply').style.display='block';
-}
-async function applyDist(){
-  if(!pendingDist)return;
-  const today=new Date().toISOString().slice(0,10);
-  const r=await api('POST','/api/daily',{date:today,revenue:0,expense:0,partner_withdrawals:pendingDist.distribution.map(p=>({partner_id:p.id,amount:p.amount,type:'dividend'})),note:'Распределение прибыли'});
-  if(r?.ok){toast('Выплаты записаны!');pendingDist=null;document.getElementById('dist-apply').style.display='none';loadDist()}else toast(r?.error||'Ошибка','error');
-}
-
-// PARTNERS
-async function loadPartners(){
-  const data=await api('GET','/api/partners');if(!data||data.error)return;
-  partners=data;
-  // Build daily partner fields
-  const c=document.getElementById('daily-partners-fields');if(c){c.innerHTML=partners.map(p=>`<div class="fi"><label style="color:${p.color}">${p.name}${p.role==='investor'?' (инвест.)':''} ₽</label><input type="number" id="pd-${p.id}" data-pid="${p.id}" data-ptype="${p.role==='investor'?'investment_return':'withdrawal'}" placeholder="0.00" step="0.01" min="0"></div>`).join('')}
-  // Partner select for investments
-  const sel=document.getElementById('i-partner');if(sel)sel.innerHTML='<option value="">— нет —</option>'+partners.map(p=>`<option value="${p.id}">${p.name}</option>`).join('');
-}
-function renderPartners(){
-  const g=document.getElementById('partners-grid');if(!g)return;
-  if(!partners.length){g.innerHTML='<div class="empty">Нет партнёров</div>';return}
+// ══ PARTNERS ══════════════════════════════════════════════════════════════
+function renderPartners() {
+  const g=document.getElementById('partners-grid');
+  if(!partners.length){g.innerHTML='<div class="empty">Нет партнёров. Добавь первого.</div>';return;}
   const roleMap={owner:'Партнёр',investor:'Инвестор',employee:'Сотрудник'};
-  g.innerHTML=partners.map(p=>`<div class="p-card" style="border-top:3px solid ${p.color}"><div style="display:flex;align-items:center;gap:10px;margin-bottom:12px"><div class="p-avatar" style="background:${p.color}22;color:${p.color}">${p.name.slice(0,2).toUpperCase()}</div><div style="flex:1"><div style="font-weight:600;font-size:13px">${p.name}</div><div style="font-size:10px;color:var(--t3);margin-top:1px">${roleMap[p.role]||p.role}</div></div><button class="del-btn" style="opacity:1" onclick="delPartner(${p.id},'${p.name}')">✕</button></div><div class="p-stat"><span style="color:var(--t3);font-size:11px">Доля</span><span style="color:${p.color};font-weight:600;font-size:12px">${p.share_type==='percent'?p.share_value+'%':p.share_type==='fixed'?fmt(p.share_value):'Не задана'}</span></div><div class="p-stat"><span style="color:var(--t3);font-size:11px">TG Chat ID</span><span style="color:var(--t2);font-size:10px;font-family:var(--mono)">${p.tg_chat_id||'—'}</span></div><div class="p-stat"><span style="color:var(--t3);font-size:11px">Статус</span><span class="${p.active?'badge bg':'badge br'}">${p.active?'Активен':'Откл.'}</span></div></div>`).join('');
+  g.innerHTML=partners.map(p=>`<div class="p-card" onclick="openPartnerPopup(${p.id})">
+    <div class="p-card-top" style="background:${p.color}"></div>
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+      <div class="p-av" style="background:${p.color}22;color:${p.color}">${p.name.slice(0,2).toUpperCase()}</div>
+      <div><div style="font-weight:600;font-size:13px">${p.name}</div><div style="font-size:10px;color:var(--t3);margin-top:1px">${roleMap[p.role]||p.role}</div></div>
+    </div>
+    <div class="p-st"><span style="color:var(--t3)">Доля</span><span style="color:${p.color};font-weight:600;font-size:11px">${p.share_type==='percent'?p.share_value+'%':p.share_type==='fixed'?fmt(p.share_value):'—'}</span></div>
+    <div class="p-st"><span style="color:var(--t3)">TG ID</span><span style="font-size:10px;font-family:var(--mono)">${p.tg_user_id||'—'}</span></div>
+    <div class="p-st"><span style="color:var(--t3)">Статус</span><span class="${p.active?'badge bg':'badge br'}">${p.active?'Активен':'Откл.'}</span></div>
+  </div>`).join('');
 }
-async function submitPartner(ev){
+function togglePartnerForm(){
+  const b=document.getElementById('partner-form-body');
+  b.style.display=b.style.display==='none'?'':'none';
+}
+async function openPartnerPopup(pid) {
+  currentPartnerId=pid;
+  const p=partners.find(x=>x.id===pid); if(!p)return;
+  const popup=document.getElementById('p-popup');
+  popup.style.display='flex';
+  document.getElementById('pp-av').style.cssText=`background:${p.color}22;color:${p.color}`;
+  document.getElementById('pp-av').textContent=p.name.slice(0,2).toUpperCase();
+  document.getElementById('pp-name').textContent=p.name;
+  const roleMap={owner:'Партнёр',investor:'Инвестор',employee:'Сотрудник'};
+  document.getElementById('pp-role').textContent=roleMap[p.role]||p.role;
+  // Notes
+  if(p.notes&&curUser?.role==='admin'){document.getElementById('pp-notes').style.display='block';document.getElementById('pp-notes').textContent='📝 '+p.notes;}
+  else document.getElementById('pp-notes').style.display='none';
+  // Stats
+  const s=await api('GET',`/api/partners/${pid}/stats`); if(!s||s.error)return;
+  document.getElementById('pp-minc').textContent=fmt(s.monthIncome);
+  document.getElementById('pp-mexp').textContent=fmt(s.monthExpense);
+  document.getElementById('pp-ainc').textContent=fmt(s.income);
+  document.getElementById('pp-aexp').textContent=fmt(s.expense);
+  // Investor block
+  if(p.role==='investor'){
+    document.getElementById('pp-invest').style.display='block';
+    // Estimate: income to investor = invested, expense = returned
+    document.getElementById('pp-invested').textContent=fmt(s.income);
+    document.getElementById('pp-returned').textContent=fmt(s.expense);
+    const debt=Math.max(0,s.income-s.expense);
+    document.getElementById('pp-debt').textContent=fmt(debt);
+    const pct=s.income>0?Math.min(s.expense/s.income*100,100):0;
+    const bar=document.getElementById('pp-inv-bar');
+    bar.style.width=pct+'%'; bar.style.background=p.color;
+  } else { document.getElementById('pp-invest').style.display='none'; }
+  // History
+  document.getElementById('pp-history').innerHTML=(s.history||[]).map(t=>`<tr><td style="font-size:10px;color:var(--t3)">${t.date}</td><td><span class="tx-ic ${t.type==='income'?'inc':'exp'}" style="width:18px;height:18px;font-size:10px">${t.type==='income'?'▲':'▼'}</span></td><td style="font-size:11px">${t.cat_name||'—'}</td><td class="${t.type==='income'?'tg':'tr2'}">${fmt(t.amount)}</td></tr>`).join('')||'<tr><td colspan="4" class="empty">Нет операций</td></tr>';
+}
+function closePartnerPopup(){document.getElementById('p-popup').style.display='none';currentPartnerId=null;}
+async function createPartnerInvite(pid) {
+  const r=await api('POST',`/api/partners/${pid}/invite`,{});
+  if(!r?.ok){toast(r?.error||'Ошибка','error');return;}
+  const wrap=document.getElementById('pp-invite-result');
+  wrap.style.display='block';
+  let linksHtml='';
+  if(r.tg_link) linksHtml+=`<div style="margin-bottom:8px"><div style="font-size:10px;color:var(--t3);margin-bottom:4px">Ссылка в Telegram (рекомендуется):</div><div style="display:flex;gap:7px"><input type="text" value="${r.tg_link}" readonly style="flex:1;font-size:11px;font-family:var(--mono);background:var(--s1);border:1px solid var(--b2);border-radius:6px;padding:7px 10px;color:var(--c);outline:none" onclick="this.select()"><button class="btn-sm" onclick="navigator.clipboard.writeText('${r.tg_link}');toast('Скопировано!')">Копировать</button></div></div>`;
+  linksHtml+=`<div><div style="font-size:10px;color:var(--t3);margin-bottom:4px">Веб-ссылка:</div><div style="display:flex;gap:7px"><input type="text" value="${r.web_link}" readonly style="flex:1;font-size:11px;font-family:var(--mono);background:var(--s1);border:1px solid var(--b2);border-radius:6px;padding:7px 10px;color:var(--c);outline:none" onclick="this.select()"><button class="btn-sm" onclick="navigator.clipboard.writeText('${r.web_link}');toast('Скопировано!')">Копировать</button></div></div>`;
+  wrap.innerHTML=linksHtml;
+  toast('Ссылка создана!');
+}
+function editPartner(pid) {
+  const p=partners.find(x=>x.id===pid); if(!p)return;
+  closePartnerPopup();
+  const m=document.getElementById('modal'); m.style.display='flex';
+  const roleMap={owner:'Партнёр',investor:'Инвестор',employee:'Сотрудник'};
+  m.innerHTML=`<div style="position:fixed;inset:0;display:flex;align-items:center;justify-content:center;padding:16px" onclick="closeModal()"><div class="modal-box" onclick="event.stopPropagation()">
+    <div class="modal-title">Редактировать: ${p.name}</div>
+    <div class="fg">
+      <div class="fr">
+        <div class="fi"><label>Имя</label><input type="text" id="ep-name" value="${p.name}"></div>
+        <div class="fi"><label>Роль</label><select id="ep-role"><option value="owner" ${p.role==='owner'?'selected':''}>Партнёр</option><option value="investor" ${p.role==='investor'?'selected':''}>Инвестор</option><option value="employee" ${p.role==='employee'?'selected':''}>Сотрудник</option></select></div>
+      </div>
+      <div class="fr">
+        <div class="fi"><label>Доля</label><select id="ep-stype"><option value="none" ${p.share_type==='none'?'selected':''}>Не задана</option><option value="percent" ${p.share_type==='percent'?'selected':''}>%</option><option value="fixed" ${p.share_type==='fixed'?'selected':''}>Фикс.</option></select></div>
+        <div class="fi"><label>Размер</label><input type="number" id="ep-sval" value="${p.share_value||0}" step="0.01"></div>
+        <div class="fi"><label>Цвет</label><input type="color" id="ep-color" value="${p.color}"></div>
+      </div>
+      <div class="fr">
+        <div class="fi"><label>TG User ID</label><input type="text" id="ep-tg" value="${p.tg_user_id||''}"></div>
+        <div class="fi"><label>Активен</label><select id="ep-active"><option value="1" ${p.active?'selected':''}>Активен</option><option value="0" ${!p.active?'selected':''}>Откл.</option></select></div>
+      </div>
+      <div class="fi"><label>Заметки</label><textarea id="ep-notes" rows="2" style="resize:vertical">${p.notes||''}</textarea></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-sm btn-danger" onclick="closeModal();delPartner(${p.id},'${p.name}')">Удалить</button>
+      <button class="btn-sm" onclick="closeModal()">Отмена</button>
+      <button class="btn-add" onclick="saveEditPartner(${p.id})">Сохранить</button>
+    </div>
+  </div></div>`;
+}
+async function saveEditPartner(id){
+  const r=await api('PUT',`/api/partners/${id}`,{name:document.getElementById('ep-name').value,role:document.getElementById('ep-role').value,share_type:document.getElementById('ep-stype').value,share_value:+document.getElementById('ep-sval').value||0,color:document.getElementById('ep-color').value,tg_user_id:document.getElementById('ep-tg').value,notes:document.getElementById('ep-notes').value,active:+document.getElementById('ep-active').value});
+  if(r?.ok){toast('Сохранено');closeModal();const ptrs=await api('GET','/api/partners');if(ptrs&&!ptrs.error){partners=ptrs;buildPartnerSelects();}renderPartners();}else toast(r?.error||'Ошибка','error');
+}
+async function submitPartner(ev) {
   ev.preventDefault();
-  const r=await api('POST','/api/partners',{name:document.getElementById('p-name').value,role:document.getElementById('p-role').value,share_type:document.getElementById('p-stype').value,share_value:+document.getElementById('p-sval').value||0,color:document.getElementById('p-color').value,tg_chat_id:document.getElementById('p-tg').value,sort_order:+document.getElementById('p-order').value||0});
-  if(r?.ok){toast('Партнёр добавлен');await loadPartners();renderPartners();ev.target.reset()}else toast(r?.error||'Ошибка','error');
+  const uname=document.getElementById('p-uname').value.trim(), upass=document.getElementById('p-upass').value.trim();
+  const body={name:document.getElementById('p-name').value,role:document.getElementById('p-role').value,share_type:document.getElementById('p-stype').value,share_value:+document.getElementById('p-sval').value||0,color:document.getElementById('p-color').value,tg_user_id:document.getElementById('p-tg').value,notes:document.getElementById('p-notes').value,create_login:!!(uname&&upass),username:uname,password:upass};
+  const r=await api('POST','/api/partners',body);
+  if(r?.ok){toast('Партнёр добавлен'+(r.user_id?' + логин создан':''));const ptrs=await api('GET','/api/partners');if(ptrs&&!ptrs.error){partners=ptrs;buildPartnerSelects();}renderPartners();ev.target.reset();}else toast(r?.error||'Ошибка','error');
 }
-async function delPartner(id,name){confirm2(`Удалить партнёра <b>${name}</b>?`,async function(){const r=await api('DELETE','/api/partners/'+id);if(r?.ok){toast('Удалён');await loadPartners();renderPartners()}else toast(r?.error||'Ошибка','error')})}
+async function delPartner(id,name){confirm2(`Удалить партнёра <b>${name}</b>?`,async function(){const r=await api('DELETE','/api/partners/'+id);if(r?.ok){toast('Удалён');const ptrs=await api('GET','/api/partners');if(ptrs&&!ptrs.error){partners=ptrs;buildPartnerSelects();}renderPartners();}else toast(r?.error||'Ошибка','error');});}
+function genPass(){const c='ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789!@#';document.getElementById('p-upass').value=Array.from(crypto.getRandomValues(new Uint8Array(12))).map(b=>c[b%c.length]).join('');}
 
-// RECEIPTS GALLERY
-async function loadReceipts(){
-  const rows=await api('GET','/api/receipts');if(!rows||rows.error)return;
-  document.getElementById('receipts-cnt').textContent=rows.length+' файлов';
-  const g=document.getElementById('gallery-grid');
-  if(!rows.length){g.innerHTML='<div class="empty">Нет загруженных файлов</div>';return}
-  g.innerHTML=`<div class="gallery">${rows.map(r=>{const isPdf=r.mimetype==='application/pdf';const thumb=isPdf?`<div class="gallery-pdf">📄</div>`:`<img class="gallery-thumb" src="/uploads/${r.filename}" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22140%22 height=%22100%22><rect fill=%22%23161620%22 width=%22140%22 height=%22100%22/></svg>'">`;return`<div class="gallery-item" onclick="window.open('/uploads/${r.filename}','_blank')">${thumb}<button class="gallery-del" onclick="event.stopPropagation();delReceipt('${r.filename}')">✕</button><div class="gallery-info"><div class="gallery-name">${r.original_name||r.filename}</div><div class="gallery-date">${r.uploaded_at?.slice(0,10)||''}</div></div></div>`}).join('')}</div>`;
+// ══ RECEIPTS ══════════════════════════════════════════════════════════════
+async function loadReceipts() {
+  const rows=await api('GET','/api/receipts'); if(!rows||rows.error)return;
+  document.getElementById('rc-cnt').textContent=rows.length+' файлов';
+  const g=document.getElementById('gallery-wrap');
+  if(!rows.length){g.innerHTML='<div class="empty">Нет загруженных файлов</div>';return;}
+  g.innerHTML=`<div class="gallery">${rows.map(r=>{
+    const isPdf=r.mimetype==='application/pdf';
+    const thumb=isPdf?`<div class="g-pdf">📄</div>`:`<img class="g-img" src="/uploads/${r.filename}" onerror="this.parentElement.querySelector('.g-pdf')&&(this.parentElement.innerHTML='<div class=g-pdf>🖼</div>')">`;
+    const linked=r.tx_desc?`<div class="g-meta" style="color:${r.tx_type==='income'?'var(--cg)':'var(--cr)'}">${r.tx_date||''} ${r.cat_name||''}</div><div class="g-meta">${r.tx_desc}</div>`:r.linked_type?`<div class="g-meta">${r.linked_type} #${r.linked_id}</div>`:'';
+    return`<div class="g-item" onclick="window.open('/uploads/${r.filename}','_blank')">${thumb}<button class="g-del" onclick="event.stopPropagation();delReceipt('${r.filename}')">✕</button><div class="g-info"><div class="g-name">${r.original_name||r.filename}</div>${linked}<div class="g-meta">${r.uploaded_at?.slice(0,10)||''}</div></div></div>`;
+  }).join('')}</div>`;
 }
-async function uploadReceipt(inp){
-  const f=inp.files[0];if(!f)return;
-  const r=await uploadFile(f,'receipt',null);
-  if(r?.ok){toast('Загружено');loadReceipts()}else toast('Ошибка загрузки','error');
-}
-async function delReceipt(fn){confirm2(`Удалить файл?`,async function(){const r=await api('DELETE','/api/receipts/'+fn);if(r?.ok){toast('Удалён');loadReceipts()}else toast(r?.error||'Ошибка','error')})}
+async function uploadReceipt(inp){const f=inp.files[0];if(!f)return;const r=await uploadFile(f,'receipt',null);if(r?.ok){toast('Загружено');loadReceipts();}else toast('Ошибка','error');}
+async function delReceipt(fn){confirm2('Удалить файл?',async function(){const r=await api('DELETE','/api/receipts/'+fn);if(r?.ok){toast('Удалён');loadReceipts();}else toast(r?.error||'Ошибка','error');});}
 
-// SETTINGS
-async function loadSettings(){
-  const s=await api('GET','/api/settings');if(!s||s.error)return;
+// ══ SETTINGS ══════════════════════════════════════════════════════════════
+async function loadSettings() {
+  const s=await api('GET','/api/settings'); if(!s||s.error)return;
   if(s.tg_bot_token)document.getElementById('s-token').value=s.tg_bot_token;
   if(s.tg_main_channel)document.getElementById('s-channel').value=s.tg_main_channel;
-  if(s.report_hour)document.getElementById('s-hour').value=s.report_hour;
+  if(s.site_url)document.getElementById('s-url').value=s.site_url;
+  if(s.report_hour!==undefined)document.getElementById('s-hour').value=s.report_hour;
+  if(s.webhook_secret)document.getElementById('wh-secret').value=s.webhook_secret;
+  document.getElementById('wh-url').value=location.origin+'/api/webhook/payment';
+  document.getElementById('wh-auto').checked=s.webhook_auto_revenue!==false;
+  document.getElementById('wh-notify').checked=s.notify_new_payment!==false;
   // Notifications
-  const notifDefs=[
-    {key:'notify_new_entry',label:'Новая запись в ежедневнике',desc:'Уведомление при добавлении дохода/расхода'},
-    {key:'notify_new_expense',label:'Новый расход со счёта',desc:'С подробностями: категория, описание, сумма'},
-    {key:'notify_budget_exceeded',label:'Превышен лимит категории',desc:'Если настроены лимиты'},
-    {key:'notify_partner_daily_report',label:'Партнёрам отправлять отчёт',desc:'Каждый партнёр с TG Chat ID получит ежедневный отчёт'},
-    {key:'notify_partners_expenses',label:'Партнёрам — новые расходы',desc:'Каждый партнёр видит все расходы компании'},
-  ];
-  const nc=document.getElementById('notif-settings');
-  if(nc){nc.innerHTML=notifDefs.map(n=>`<div class="setting-row"><div><div class="setting-label">${n.label}</div><div class="setting-desc">${n.desc}</div></div><label class="toggle"><input type="checkbox" id="n-${n.key}" ${s[n.key]?'checked':''}><div class="toggle-track"></div><div class="toggle-thumb"></div></label></div>`).join('')}
-  // Limits
-  const cats=['Реклама','Сервера','LeadTex','ФНС','ТГ Прем','СКАМ'];
-  const limits=s.expense_limits||{};
-  const lf=document.getElementById('limits-fields');
-  if(lf){lf.innerHTML=cats.map(c=>`<div class="fi"><label>${c} ₽</label><input type="number" id="lim-${c}" placeholder="0" min="0" value="${limits[c]||''}"></div>`).join('')}
-  // Report channels
-  const rc=document.getElementById('report-channels');
-  if(rc){
-    rc.innerHTML=`<div style="display:flex;flex-direction:column;gap:9px">
-      <div style="font-size:11px;color:var(--t2)">Основной канал задан выше.<br>Партнёры с Chat ID в карточке получат личные уведомления.</div>
-      ${partners.map(p=>`<div style="display:flex;align-items:center;gap:8px"><div style="width:8px;height:8px;border-radius:50%;background:${p.color};flex-shrink:0"></div><span style="font-size:12px;flex:1">${p.name}</span><span class="${p.tg_chat_id?'badge bg':'badge br'}">${p.tg_chat_id?'✓ '+p.tg_chat_id:'Не задан'}</span></div>`).join('')}
-    </div>`;
-  }
+  const notifDefs=[{key:'notify_new_expense',label:'Уведомление о новом расходе'},{key:'notify_new_payment',label:'Уведомление о входящей оплате'},{key:'notify_budget_exceeded',label:'Превышен лимит категории'}];
+  document.getElementById('notif-wrap').innerHTML=notifDefs.map(n=>`<div style="display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid var(--b1)"><span style="font-size:12px">${n.label}</span><label style="cursor:pointer"><input type="checkbox" id="n-${n.key}" ${s[n.key]?'checked':''} style="accent-color:var(--c)"></label></div>`).join('');
+  // Categories
+  await loadCatsList();
+  // Users
+  await loadUsersList();
+  // Invites
+  await loadInvitesList();
 }
+async function loadCatsList() {
+  const cats2=await api('GET','/api/categories'); if(!cats2||cats2.error)return;
+  document.getElementById('cats-list').innerHTML=`<div class="tw"><table><thead><tr><th>Иконка</th><th>Название</th><th>Тип</th><th></th></tr></thead><tbody>${cats2.map(c=>`<tr><td style="font-size:14px">${c.icon}</td><td style="font-size:12px">${c.name}</td><td><span class="badge ${c.type==='income'?'bg':'br'}">${c.type==='income'?'Доход':'Расход'}</span></td><td>${c.is_system?'':'<button class="del-btn admin-only" style="opacity:1" onclick="delCat('+c.id+')">✕</button>'}</td></tr>`).join('')}</tbody></table></div>`;
+}
+function openCatModal(){
+  const m=document.getElementById('modal'); m.style.display='flex';
+  m.innerHTML=`<div style="position:fixed;inset:0;display:flex;align-items:center;justify-content:center;padding:16px" onclick="closeModal()"><div class="modal-box" onclick="event.stopPropagation()"><div class="modal-title">Новая категория</div><div class="fg"><div class="fr"><div class="fi"><label>Название *</label><input type="text" id="cn"></div><div class="fi"><label>Тип *</label><select id="ct"><option value="expense">Расход</option><option value="income">Доход</option></select></div></div><div class="fr"><div class="fi"><label>Иконка (emoji)</label><input type="text" id="ci" placeholder="◆" maxlength="4"></div><div class="fi"><label>Цвет</label><input type="color" id="cc" value="#8892b0"></div></div></div><div class="modal-actions"><button class="btn-sm" onclick="closeModal()">Отмена</button><button class="btn-add" onclick="saveCat()">Добавить</button></div></div></div>`;
+}
+async function saveCat(){const r=await api('POST','/api/categories',{name:document.getElementById('cn').value,type:document.getElementById('ct').value,icon:document.getElementById('ci').value||'◆',color:document.getElementById('cc').value});if(r?.ok){toast('Категория добавлена');closeModal();const c=await api('GET','/api/categories');if(c&&!c.error){cats=c;buildCatSelects();}loadCatsList();}else toast(r?.error||'Ошибка','error');}
+async function delCat(id){confirm2('Удалить категорию?',async function(){const r=await api('DELETE','/api/categories/'+id);if(r?.ok){toast('Удалена');const c=await api('GET','/api/categories');if(c&&!c.error){cats=c;buildCatSelects();}loadCatsList();}else toast(r?.error||'Ошибка','error');});}
+async function loadUsersList(){
+  const users=await api('GET','/api/users'); if(!users||users.error)return;
+  const roleCls={admin:'br',editor:'bg',viewer:'bv'};
+  const roleLabels={admin:'Админ',editor:'Редактор',viewer:'Читатель'};
+  document.getElementById('users-body').innerHTML=users.map(u=>{const name=u.tg_name?`${u.tg_name} (@${u.tg_username||''})`:(u.username||'—');return`<tr><td style="font-size:11px">${name}</td><td><span class="badge ${roleCls[u.role]||'bb'}">${roleLabels[u.role]||u.role}</span></td><td><span class="${u.active?'badge bg':'badge br'}">${u.active?'Активен':'Откл.'}</span></td><td style="display:flex;gap:5px"><button class="btn-sm" onclick="toggleUser(${u.id},${u.active?0:1})">${u.active?'Откл':'Вкл'}</button><button class="btn-sm btn-danger" onclick="delUser(${u.id},'${u.username||u.tg_name||u.id}')">✕</button></td></tr>`;}).join('')||'<tr><td colspan="4" class="empty">Нет пользователей</td></tr>';
+}
+function openUserModal(){
+  const m=document.getElementById('modal'); m.style.display='flex';
+  m.innerHTML=`<div style="position:fixed;inset:0;display:flex;align-items:center;justify-content:center;padding:16px" onclick="closeModal()"><div class="modal-box" onclick="event.stopPropagation()"><div class="modal-title">Новый пользователь</div><div class="fg"><div class="fr"><div class="fi"><label>Логин *</label><input type="text" id="ul-n" placeholder="ivan"></div><div class="fi"><label>Пароль *</label><input type="text" id="ul-p" placeholder="..."><button type="button" class="btn-sm" onclick="document.getElementById('ul-p').value=genPassStr()" style="margin-top:4px">🎲 Генерировать</button></div></div><div class="fi"><label>Роль</label><select id="ul-r"><option value="viewer">Читатель</option><option value="editor">Редактор</option><option value="admin">Администратор</option></select></div></div><div class="modal-actions"><button class="btn-sm" onclick="closeModal()">Отмена</button><button class="btn-add" onclick="saveUser()">Создать</button></div></div></div>`;
+}
+function genPassStr(){const c='ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789';return Array.from(crypto.getRandomValues(new Uint8Array(12))).map(b=>c[b%c.length]).join('');}
+async function saveUser(){const r=await api('POST','/api/users',{username:document.getElementById('ul-n').value,password:document.getElementById('ul-p').value,role:document.getElementById('ul-r').value});if(r?.ok){toast('Пользователь создан');closeModal();loadUsersList();}else toast(r?.error||'Ошибка','error');}
+async function toggleUser(id,a){const r=await api('PUT','/api/users/'+id,{active:a});if(r?.ok){toast(a?'Активирован':'Деактивирован');loadUsersList();}else toast(r?.error||'Ошибка','error');}
+async function delUser(id,n){confirm2(`Удалить пользователя <b>${n}</b>?`,async function(){const r=await api('DELETE','/api/users/'+id);if(r?.ok){toast('Удалён');loadUsersList();}else toast(r?.error||'Ошибка','error');});}
+async function loadInvitesList(){
+  const invs=await api('GET','/api/invites'); if(!invs||invs.error)return;
+  const rl={admin:'Админ',editor:'Редактор',viewer:'Читатель'};
+  const rc={admin:'br',editor:'bg',viewer:'bv'};
+  const il=document.getElementById('invites-wrap');
+  if(!invs.length){il.innerHTML='<div class="empty">Нет приглашений</div>';return;}
+  il.innerHTML=invs.map(inv=>{
+    const exp=new Date(inv.expires_at)<new Date();
+    return`<div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--b1);flex-wrap:wrap"><span class="badge ${rc[inv.role]||'bb'}">${rl[inv.role]||inv.role}</span><span style="font-size:11px;color:var(--t3);flex:1">${inv.note||''}</span><span style="font-size:10px;color:${exp?'var(--cr)':'var(--t3)'}">${new Date(inv.expires_at).toLocaleString('ru',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})}</span><span style="font-size:10px;color:${inv.used_at?'var(--cg)':'var(--t3)'}">${inv.used_at?'✓ Использовано':'Не использовано'}</span><button class="del-btn admin-only" style="opacity:1" onclick="delInvite(${inv.id})">✕</button></div>`;
+  }).join('');
+}
+async function delInvite(id){const r=await api('DELETE','/api/invites/'+id);if(r?.ok){toast('Удалено');loadInvitesList();}else toast(r?.error||'Ошибка','error');}
 async function saveSettings(){
-  const body={tg_bot_token:document.getElementById('s-token').value.trim(),tg_main_channel:document.getElementById('s-channel').value.trim()};
-  const hour=document.getElementById('s-hour').value;if(hour)body.report_hour=+hour;
-  // Notifications
-  ['notify_new_entry','notify_new_expense','notify_budget_exceeded','notify_partner_daily_report','notify_partners_expenses'].forEach(k=>{const el=document.getElementById('n-'+k);if(el)body[k]=el.checked});
-  // Limits
-  const limits={};
-  ['Реклама','Сервера','LeadTex','ФНС','ТГ Прем','СКАМ'].forEach(c=>{const el=document.getElementById('lim-'+c);if(el&&el.value)limits[c]=+el.value});
-  if(Object.keys(limits).length)body.expense_limits=limits;
+  const body={tg_bot_token:document.getElementById('s-token').value.trim(),tg_main_channel:document.getElementById('s-channel').value.trim(),site_url:document.getElementById('s-url').value.trim(),webhook_secret:document.getElementById('wh-secret').value.trim(),webhook_auto_revenue:document.getElementById('wh-auto').checked,notify_new_payment:document.getElementById('wh-notify').checked};
+  const sh=document.getElementById('s-hour').value; if(sh)body.report_hour=+sh;
+  ['notify_new_expense','notify_budget_exceeded'].forEach(k=>{const el=document.getElementById('n-'+k);if(el)body[k]=el.checked;});
   const r=await api('POST','/api/settings',body);
   if(r?.ok)toast('Настройки сохранены');else toast(r?.error||'Ошибка','error');
 }
-async function saveLimits(){await saveSettings()}
 async function testBot(){
-  const token=document.getElementById('s-token').value.trim();
-  if(!token){toast('Введи токен','error');return}
-  const s=document.getElementById('bot-status');s.textContent='Проверяю...';s.style.color='var(--t3)';
-  try{const r=await fetch(`https://api.telegram.org/bot${token}/getMe`);const d=await r.json();if(d.ok){s.textContent='✓ '+d.result.username;s.style.color='var(--cg)'}else{s.textContent='✗ Неверный токен';s.style.color='var(--cr)'}}catch{s.textContent='✗ Ошибка сети';s.style.color='var(--cr)'}
+  const t=document.getElementById('s-token').value.trim(); if(!t){toast('Введи токен','error');return;}
+  const s=document.getElementById('bot-st'); s.textContent='...'; s.style.color='var(--t3)';
+  try{const r=await fetch(`https://api.telegram.org/bot${t}/getMe`);const d=await r.json();if(d.ok){s.textContent='✓ @'+d.result.username;s.style.color='var(--cg)';}else{s.textContent='✗ Неверный токен';s.style.color='var(--cr)';}}catch{s.textContent='✗ Ошибка сети';s.style.color='var(--cr)';}
+}
+function copyWh(){navigator.clipboard.writeText(document.getElementById('wh-url').value);toast('URL скопирован!');}
+function genSecret(){const c='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';document.getElementById('wh-secret').value=Array.from(crypto.getRandomValues(new Uint8Array(32))).map(b=>c[b%c.length]).join('');}
+async function testWebhook(){
+  const secret=document.getElementById('wh-secret').value;
+  const body={payment_id:'test_'+Date.now(),amount:1500,customer_name:'Тест Иванов',email:'test@example.com',product:'VPN 1 мес.',mode:'test',status:'success'};
+  const headers={'Content-Type':'application/json'}; if(secret)headers['X-Webhook-Secret']=secret;
+  const res=document.getElementById('wh-test-result'); res.style.display='block'; res.textContent='...';
+  try{const r=await fetch('/api/webhook/payment',{method:'POST',credentials:'include',headers,body:JSON.stringify(body)});const d=await r.json();res.innerHTML=r.ok?`<div style="color:var(--cg);font-size:11px;margin-top:6px">✓ mode=test ${JSON.stringify(d)}</div>`:`<div style="color:var(--cr);font-size:11px;margin-top:6px">✗ ${d.error}</div>`;}catch(e){res.innerHTML=`<div style="color:var(--cr);font-size:11px;margin-top:6px">✗ ${e.message}</div>`;}
+}
+function showCurl(){
+  const secret=document.getElementById('wh-secret').value;
+  const url=location.origin+'/api/webhook/payment';
+  const curl=`curl -X POST "${url}" \\\n  -H "Content-Type: application/json" \\\n  -H "X-Webhook-Secret: ${secret||'YOUR_SECRET'}" \\\n  -d '{"payment_id":"pay_123","amount":1500,"customer_name":"Иван","product":"VPN 1 мес.","mode":"live","status":"success"}'`;
+  const res=document.getElementById('wh-test-result'); res.style.display='block';
+  res.innerHTML=`<pre style="background:var(--s3);border:1px solid var(--b2);border-radius:7px;padding:12px;font-size:10px;color:var(--t2);overflow-x:auto;white-space:pre-wrap;margin-top:6px">${curl}</pre><button class="btn-sm" style="margin-top:7px" onclick="navigator.clipboard.writeText(${JSON.stringify(curl)});toast('Скопировано!')">Копировать</button>`;
 }
 
-// INLINE EDIT
-async function inlineEdit(td,table,id,field,currentVal,isStr=false,isInt=false){
+// ══ AUDIT ════════════════════════════════════════════════════════════════
+const AL={login:'Вход',login_tg:'Вход TG',logout:'Выход',create_tx:'Операция добавлена',edit_tx:'Операция изменена',delete_tx:'Операция удалена',create_ad:'Реклама добавлена',delete_ad:'Реклама удалена',create_partner:'Партнёр добавлен',update_partner:'Партнёр изменён',delete_partner:'Партнёр удалён',send_report:'Отчёт отправлен',update_settings:'Настройки',import_json:'Импорт',create_user:'Создан пользователь',update_user:'Пользователь изменён',delete_user:'Пользователь удалён',upload_file:'Файл загружен',create_category:'Категория добавлена'};
+async function loadAudit(reset=true) {
+  if(reset)auditOffset=0;
+  const d=await api('GET',`/api/audit?limit=50&offset=${auditOffset}`); if(!d||d.error)return;
+  document.getElementById('audit-total').textContent=`Всего: ${d.total}`;
+  const rc={admin:'br',editor:'bg',viewer:'bv'};
+  const rows=d.rows||[];
+  const html=rows.map(a=>{
+    let det=''; try{const dj=JSON.parse(a.details||'{}');det=Object.entries(dj).map(([k,v])=>`${k}=${JSON.stringify(v)}`).join(', ');}catch{}
+    return`<tr><td style="font-size:10px;color:var(--t3);font-family:var(--mono)">${(a.created_at||'').slice(0,16).replace('T',' ')}</td><td style="font-size:11px">${a.username||a.tg_username||`#${a.user_id||'?'}`}</td><td><span class="badge ${rc[a.user_role]||'bb'}" style="font-size:8px">${a.user_role||'—'}</span></td><td style="font-size:11px;color:var(--t1)">${AL[a.action]||a.action}</td><td style="font-size:10px;color:var(--t3);max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${det}">${det}</td><td style="font-size:10px;font-family:var(--mono);color:var(--t3)">${a.ip||'—'}</td></tr>`;
+  }).join('')||'<tr><td colspan="6" class="empty">Нет записей</td></tr>';
+  const tbody=document.getElementById('audit-body');
+  if(reset)tbody.innerHTML=html; else tbody.insertAdjacentHTML('beforeend',html);
+  document.getElementById('audit-more').style.display=rows.length===50?'':'none';
+}
+function loadMoreAudit(){auditOffset+=50;loadAudit(false);}
+
+// ══ INLINE EDIT ═══════════════════════════════════════════════════════════
+async function inlineEdit(td, table, id, field, cur, isStr=false) {
   if(td.classList.contains('editing'))return;
   td.classList.add('editing');
   const orig=td.innerHTML;
   const inp=document.createElement('input');
-  inp.type=isStr?'text':'number';
-  inp.value=isStr?currentVal:(+currentVal||0);
-  if(!isStr&&!isInt){inp.step='0.01';inp.min='0'}
-  if(isInt){inp.step='1';inp.min='0'}
+  inp.type=isStr?'text':'number';inp.value=isStr?cur:(+cur||0);
+  if(!isStr){inp.step='0.01';inp.min='0';}
   td.innerHTML='';td.appendChild(inp);inp.focus();inp.select();
   async function save(){
-    const v=isStr?inp.value:(isInt?+inp.value:+inp.value);
+    const v=isStr?inp.value:+inp.value;
     td.classList.remove('editing');
     const r=await api('PATCH',`/api/${table}/${id}`,{[field]:v});
-    if(r?.ok){toast('Изменено');({dashboard:loadDashboard,daily:loadDaily,expenses:loadExpenses,ads:loadAds})[curPage]?.()}
-    else{td.innerHTML=orig;toast(r?.error||'Ошибка','error')}
+    if(r?.ok){toast('Изменено');nav(curPage);}else{td.innerHTML=orig;toast(r?.error||'Ошибка','error');}
   }
-  inp.addEventListener('blur',save);
-  inp.addEventListener('keydown',e=>{if(e.key==='Enter')inp.blur();if(e.key==='Escape'){td.innerHTML=orig;td.classList.remove('editing')}});
+  inp.onblur=save;inp.onkeydown=e=>{if(e.key==='Enter')inp.blur();if(e.key==='Escape'){td.innerHTML=orig;td.classList.remove('editing');}};
 }
 
-// DELETE
-function del(type,id){confirm2('Удалить запись?',async function(){const r=await api('DELETE','/api/'+type+'/'+id);if(r?.ok){toast('Удалено');nav(curPage)}else toast(r?.error||'Ошибка','error')})}
+// ══ DELETE ════════════════════════════════════════════════════════════════
+function del(type, id) {
+  confirm2('Удалить запись?', async function() {
+    const r = await api('DELETE', `/api/${type}/${id}`);
+    if (r?.ok) { toast('Удалено'); nav(curPage); }
+    else toast(r?.error || 'Ошибка', 'error');
+  });
+}
 
-// IMPORT/EXPORT
-function exportExcel(){window.open(`/api/export/excel?month=${document.getElementById('exp-m').value}&year=${document.getElementById('exp-y').value}`,'_blank')}
-function exportJson(){window.open('/api/export/json','_blank')}
+// ══ EXPORT / IMPORT ═══════════════════════════════════════════════════════
+function exportExcel(){window.open(`/api/export/excel?month=${document.getElementById('exp-m').value}&year=${document.getElementById('exp-y').value}`,'_blank');}
+function exportJson(){window.open('/api/export/json','_blank');}
 async function handleImport(inp){
-  const f=inp.files[0];if(!f)return;
-  const s=document.getElementById('imp-status');s.style.display='block';s.innerHTML='<span class="spin"></span> Обрабатываю...';
-  if(!f.name.endsWith('.json')){s.innerHTML='<span style="color:var(--cr)">Поддерживается только JSON</span>';return}
-  let data;try{data=JSON.parse(await f.text())}catch{s.innerHTML='<span style="color:var(--cr)">Ошибка: неверный JSON</span>';return}
+  const f=inp.files[0]; if(!f)return;
+  const s=document.getElementById('imp-status'); s.style.display='block'; s.innerHTML='<div class="spin"></div>';
+  if(!f.name.endsWith('.json')){s.innerHTML='<span style="color:var(--cr)">Только JSON</span>';return;}
+  let data; try{data=JSON.parse(await f.text());}catch{s.innerHTML='<span style="color:var(--cr)">Неверный JSON</span>';return;}
   const r=await api('POST','/api/import/json',data);
-  s.innerHTML=r?.ok?`<span style="color:var(--cg)">✓ Импортировано: ${JSON.stringify(r.imported)}</span>`:`<span style="color:var(--cr)">✗ ${r?.error||'Ошибка'}</span>`;
+  s.innerHTML=r?.ok?`<span style="color:var(--cg)">✓ ${JSON.stringify(r.imported)}</span>`:`<span style="color:var(--cr)">✗ ${r?.error||'Ошибка'}</span>`;
 }
 
-// REPORT / LOGOUT
-async function sendReport(){const r=await api('POST','/api/report/send');if(r?.ok)toast('Отчёт отправлен в TG!');else toast(r?.error||'Ошибка','error')}
-async function logout(){await api('POST','/api/auth/logout');window.location.href='/login'}
+// ══ REPORT / LOGOUT ════════════════════════════════════════════════════════
+async function sendReport(){const r=await api('POST','/api/report/send');if(r?.ok)toast('Отчёт отправлен!');else toast(r?.error||'Ошибка','error');}
+async function logout(){await api('POST','/api/auth/logout');window.location.href='/login';}
 
-
-// ══ CURRENT USER ══════════════════════════════════════════════════════════
-let currentUser = null;
-async function loadCurrentUser() {
-  const u = await api('GET','/api/auth/me');
-  if(u && !u.error) { currentUser = u; applyRoleRestrictions(); }
-}
-function applyRoleRestrictions() {
-  if(!currentUser) return;
-  const isAdmin = currentUser.role === 'admin';
-  const isEditor = currentUser.role === 'admin' || currentUser.role === 'editor';
-  // Hide admin-only nav items from non-admins
-  ['users','webhook','audit'].forEach(p => {
-    const el = document.querySelector(`[data-page="${p}"]`);
-    if(el) el.style.display = isAdmin ? '' : 'none';
-  });
-  // Hide forms from viewers
-  if(!isEditor) {
-    document.querySelectorAll('.btn-add,form').forEach(el => el.style.display='none');
-    document.querySelectorAll('.del-btn').forEach(el => el.style.display='none');
-  }
-}
-
-// ══ USERS ══════════════════════════════════════════════════════════════════
-async function loadUsers() {
-  const rows = await api('GET','/api/users');
-  if(!rows||rows.error) return;
-  const roleLabels = {admin:'Админ',editor:'Редактор',viewer:'Читатель'};
-  const roleCls    = {admin:'br',editor:'bg',viewer:'bv'};
-  document.getElementById('users-body').innerHTML = rows.map(u => {
-    const name = u.tg_name ? `${u.tg_name} <span style="color:var(--t3);font-size:10px">@${u.tg_username||''}</span>` : (u.username||'—');
-    const lastSeen = u.last_seen ? new Date(u.last_seen).toLocaleString('ru',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}) : '—';
-    return `<tr>
-      <td style="color:var(--t3)">#${u.id}</td>
-      <td>${name}</td>
-      <td><span class="badge ${roleCls[u.role]||'bb'}">${roleLabels[u.role]||u.role}</span></td>
-      <td><span class="${u.active?'badge bg':'badge br'}">${u.active?'Активен':'Откл.'}</span></td>
-      <td style="color:var(--t3);font-size:11px">${lastSeen}</td>
-      <td style="display:flex;gap:6px">
-        <button class="btn-sm" onclick="toggleUser(${u.id},${u.active?0:1})">${u.active?'Откл':'Вкл'}</button>
-        <button class="btn-sm btn-danger" onclick="delUser(${u.id},'${u.username||u.tg_name||u.id}')">✕</button>
-      </td>
-    </tr>`;
-  }).join('') || '<tr><td colspan="6" class="empty">Нет пользователей</td></tr>';
-
-  // Invites
-  const invites = await api('GET','/api/invites');
-  const siteOrigin = location.origin;
-  document.getElementById('invites-body').innerHTML = (invites||[]).map(inv => {
-    const exp = new Date(inv.expires_at) < new Date();
-    return `<tr>
-      <td><span class="badge ${roleCls[inv.role]||'bb'}">${roleLabels[inv.role]||inv.role}</span></td>
-      <td style="font-size:11px;color:var(--t3)">${inv.note||'—'}</td>
-      <td style="font-size:11px;color:${exp?'var(--cr)':'var(--t2)'}">${new Date(inv.expires_at).toLocaleString('ru',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})}</td>
-      <td>${inv.used_at?`<span style="color:var(--cg);font-size:11px">✓ ${inv.used_by_name||''}</span>`:'<span style="color:var(--t3);font-size:11px">Не использовано</span>'}</td>
-      <td style="font-size:10px;font-family:var(--mono)">
-        ${!inv.used_at&&!exp?`<a href="${siteOrigin}/invite/${inv.token}" target="_blank" style="color:var(--c)">/invite/${inv.token.slice(0,8)}...</a>`:'—'}
-      </td>
-      <td><button class="del-btn" style="opacity:1" onclick="delInvite(${inv.id})">✕</button></td>
-    </tr>`;
-  }).join('') || '<tr><td colspan="6" class="empty">Нет приглашений</td></tr>';
-}
-
-document.getElementById('userForm')?.addEventListener('submit', async ev => {
-  ev.preventDefault();
-  const r = await api('POST','/api/users',{username:document.getElementById('u-name').value,password:document.getElementById('u-pass').value,role:document.getElementById('u-role').value});
-  if(r?.ok){toast('Пользователь создан');loadUsers();ev.target.reset()}else toast(r?.error||'Ошибка','error');
-});
-
-async function createInvite() {
-  const r = await api('POST','/api/invites',{role:document.getElementById('inv-role').value,hours:+document.getElementById('inv-hours').value||24,note:document.getElementById('inv-note').value});
-  if(!r?.ok){toast(r?.error||'Ошибка','error');return}
-  const div = document.getElementById('invite-result');
-  div.style.display = 'block';
-  div.innerHTML = `<div style="font-size:11px;color:var(--t3);margin-bottom:8px">Ссылка создана — работает <b>${document.getElementById('inv-hours').value} часов</b>, одноразовая:</div>
-    <div style="display:flex;gap:8px;align-items:center">
-      <input type="text" value="${r.url}" readonly style="flex:1;font-family:var(--mono);font-size:11px;background:var(--bg);border:1px solid var(--b2);border-radius:6px;padding:7px 10px;color:var(--c);outline:none" onclick="this.select()">
-      <button class="btn-sm" onclick="navigator.clipboard.writeText('${r.url}');toast('Скопировано!')">Скопировать</button>
-    </div>`;
-  loadUsers();
-}
-
-async function toggleUser(id, active) {
-  const r = await api('PUT','/api/users/'+id,{active});
-  if(r?.ok){toast(active?'Активирован':'Деактивирован');loadUsers()}else toast(r?.error||'Ошибка','error');
-}
-async function delUser(id,name){
-  confirm2(`Удалить пользователя <b>${name}</b>?`, async function(){
-    const r=await api('DELETE','/api/users/'+id);
-    if(r?.ok){toast('Удалён');loadUsers()}else toast(r?.error||'Ошибка','error');
-  });
-}
-async function delInvite(id){
-  const r=await api('DELETE','/api/invites/'+id);
-  if(r?.ok){toast('Удалено');loadUsers()}else toast(r?.error||'Ошибка','error');
-}
-
-// ══ WEBHOOK ════════════════════════════════════════════════════════════════
-async function loadWebhook() {
-  const s = await api('GET','/api/settings');
-  const url = `${location.origin}/api/webhook/payment`;
-  document.getElementById('wh-url').value = url;
-  if(s?.webhook_secret) document.getElementById('wh-secret').value = s.webhook_secret;
-  if(s?.webhook_auto_revenue !== undefined) document.getElementById('wh-auto-rev').checked = s.webhook_auto_revenue;
-  if(s?.notify_new_payment !== undefined) document.getElementById('wh-notify').checked = s.notify_new_payment;
-  updateJsonExample();
-  loadPayments();
-  loadWebhookStats();
-}
-function updateJsonExample() {
-  const secret = document.getElementById('wh-secret')?.value || 'YOUR_SECRET';
-  const ex = {
-    payment_id: "pay_abc123xyz",
-    amount: 1500,
-    currency: "RUB",
-    customer_id: "user_42",
-    customer_name: "Иван Иванов",
-    email: "ivan@example.com",
-    product: "VPN Подписка 1 мес.",
-    status: "success",
-    mode: "live"
-  };
-  const pre = document.getElementById('json-example');
-  if(pre) pre.textContent =
-`POST /api/webhook/payment HTTP/1.1
-Content-Type: application/json
-X-Webhook-Secret: ${secret}
-
-${JSON.stringify(ex, null, 2)}`;
-}
-document.getElementById('wh-secret')?.addEventListener('input', updateJsonExample);
-
-function genSecret() {
-  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-  const secret = Array.from(crypto.getRandomValues(new Uint8Array(32))).map(b => chars[b % chars.length]).join('');
-  document.getElementById('wh-secret').value = secret;
-  updateJsonExample();
-}
-function copyWebhookUrl() {
-  navigator.clipboard.writeText(document.getElementById('wh-url').value);
-  toast('URL скопирован!');
-}
-async function saveWebhookSettings() {
-  const r = await api('POST','/api/settings',{webhook_secret:document.getElementById('wh-secret').value,webhook_auto_revenue:document.getElementById('wh-auto-rev').checked,notify_new_payment:document.getElementById('wh-notify').checked});
-  if(r?.ok){toast('Настройки Webhook сохранены');updateJsonExample()}else toast(r?.error||'Ошибка','error');
-}
-async function sendTestWebhook() {
-  const body = {
-    payment_id: 'test_'+Date.now(),
-    amount: +document.getElementById('test-amount').value||100,
-    customer_name: document.getElementById('test-name').value,
-    email: document.getElementById('test-email').value,
-    product: document.getElementById('test-product').value,
-    mode: document.getElementById('test-mode').value,
-    status: 'success'
-  };
-  const secret = document.getElementById('wh-secret').value;
-  const headers = {'Content-Type':'application/json'};
-  if(secret) headers['X-Webhook-Secret'] = secret;
-  const res = document.getElementById('test-result');
-  res.style.display = 'block';
-  res.innerHTML = '<span class="spin"></span> Отправляю...';
-  try {
-    const r = await fetch('/api/webhook/payment',{method:'POST',credentials:'include',headers,body:JSON.stringify(body)});
-    const data = await r.json();
-    if(r.ok) {
-      res.innerHTML = `<div style="background:rgba(0,245,160,.08);border:1px solid rgba(0,245,160,.2);border-radius:7px;padding:10px;font-size:11px;color:var(--cg)">✓ Успешно! mode=${body.mode}<br><code style="color:var(--t2)">${JSON.stringify(data)}</code></div>`;
-      loadPayments();loadWebhookStats();
-    } else {
-      res.innerHTML = `<div style="background:rgba(255,48,96,.08);border:1px solid rgba(255,48,96,.2);border-radius:7px;padding:10px;font-size:11px;color:var(--cr)">✗ Ошибка: ${data.error}</div>`;
-    }
-  } catch(e) {
-    res.innerHTML = `<div style="color:var(--cr);font-size:11px">✗ ${e.message}</div>`;
-  }
-}
-async function genCurlExample() {
-  const secret = document.getElementById('wh-secret').value;
-  const url = location.origin + '/api/webhook/payment';
-  const body = {payment_id:`test_${Date.now()}`,amount:+document.getElementById('test-amount').value,customer_name:document.getElementById('test-name').value,email:document.getElementById('test-email').value,product:document.getElementById('test-product').value,mode:document.getElementById('test-mode').value,status:'success'};
-  const curl = `curl -X POST "${url}" \
-  -H "Content-Type: application/json" \
-  -H "X-Webhook-Secret: ${secret||'YOUR_SECRET'}" \
-  -d '${JSON.stringify(body)}'`;
-  const res = document.getElementById('test-result');
-  res.style.display='block';
-  res.innerHTML=`<pre style="background:var(--s3);border:1px solid var(--b2);border-radius:7px;padding:12px;font-size:10px;color:var(--t2);overflow-x:auto;white-space:pre-wrap">${curl}</pre><button class="btn-sm" style="margin-top:8px" onclick="navigator.clipboard.writeText(${JSON.stringify(curl)});toast('Скопировано!')">Скопировать</button>`;
-}
-async function loadPayments() {
-  const mode = document.getElementById('wh-filter')?.value||'';
-  const url = mode ? `/api/webhook/payments?mode=${mode}` : '/api/webhook/payments';
-  const data = await api('GET', url);
-  if(!data||data.error) return;
-  const tbody = document.getElementById('payments-body');
-  tbody.innerHTML = (data.payments||[]).map(p => `<tr>
-    <td style="font-size:11px;color:var(--t3)">${p.received_at?.slice(0,16).replace('T',' ')||'—'}</td>
-    <td><span class="badge ${p.mode==='live'?'br':'bb'}">${p.mode==='live'?'🔴 LIVE':'🧪 TEST'}</span></td>
-    <td class="tg">${fmt(p.amount)}</td>
-    <td style="font-size:11px">${p.customer_name||'—'}</td>
-    <td style="font-size:11px;color:var(--t3)">${p.customer_email||'—'}</td>
-    <td style="font-size:11px;color:var(--t2)">${p.product||'—'}</td>
-    <td><span class="badge ${p.status==='success'?'bg':'br'}">${p.status}</span></td>
-    <td><button class="del-btn" style="opacity:1" onclick="del('webhook/payments',${p.id})">✕</button></td>
-  </tr>`).join('') || '<tr><td colspan="8" class="empty">Нет платежей</td></tr>';
-}
-async function loadWebhookStats() {
-  const data = await api('GET','/api/webhook/payments');
-  if(!data||data.error) return;
-  const stats = data.stats||[];
-  const live = stats.find(s=>s.mode==='live')||{cnt:0,total:0};
-  const test = stats.find(s=>s.mode==='test')||{cnt:0,total:0};
-  const el = document.getElementById('wh-stats');
-  if(el) el.innerHTML = `<div class="g2" style="gap:10px">
-    <div style="background:var(--s3);border:1px solid rgba(255,48,96,.2);border-radius:8px;padding:14px">
-      <div style="font-size:9px;color:var(--cr);letter-spacing:2px;text-transform:uppercase;margin-bottom:8px">🔴 LIVE ПЛАТЕЖИ</div>
-      <div style="font-family:var(--display);font-size:22px;font-weight:700;color:var(--cg)">${fmt(live.total||0)}</div>
-      <div style="font-size:10px;color:var(--t3);margin-top:4px">${live.cnt||0} транзакций</div>
-    </div>
-    <div style="background:var(--s3);border:1px solid rgba(0,229,255,.15);border-radius:8px;padding:14px">
-      <div style="font-size:9px;color:var(--c);letter-spacing:2px;text-transform:uppercase;margin-bottom:8px">🧪 TEST ПЛАТЕЖИ</div>
-      <div style="font-family:var(--display);font-size:22px;font-weight:700;color:var(--c)">${fmt(test.total||0)}</div>
-      <div style="font-size:10px;color:var(--t3);margin-top:4px">${test.cnt||0} транзакций</div>
-    </div>
-  </div>`;
-}
-
-// ══ AUDIT ══════════════════════════════════════════════════════════════════
-let auditOffset = 0;
-const actionLabels = {login:'Вход',login_tg:'Вход TG',logout:'Выход',create_user:'Создан польз.',update_user:'Изм. польз.',delete_user:'Удалён польз.',create_invite:'Создан invite',upsert_daily:'Запись дня',edit_daily:'Ред. записи',delete_daily:'Удалена запись',create_expense:'Новый расход',edit_expense:'Ред. расходы',delete_expense:'Удалён расход',create_ad:'Новая реклама',delete_ad:'Удал. реклама',create_investment:'Инвестиция',delete_investment:'Удал. инвест.',send_report:'Отчёт отправлен',update_settings:'Настройки',import_json:'Импорт',export_json:'Экспорт',upload_file:'Загрузка файла',create_partner:'Новый партнёр',delete_partner:'Удалён партнёр'};
-async function loadAudit(reset=true) {
-  if(reset) auditOffset=0;
-  const data = await api('GET',`/api/audit?limit=50&offset=${auditOffset}`);
-  if(!data||data.error) return;
-  document.getElementById('audit-total').textContent = `Всего: ${data.total}`;
-  const tbody = document.getElementById('audit-body');
-  const rows = data.rows||[];
-  const html = rows.map(a => {
-    const details = a.details ? (() => { try{const d=JSON.parse(a.details);return Object.entries(d).map(([k,v])=>`${k}=${JSON.stringify(v)}`).join(', ')}catch{return a.details} })() : '';
-    const roleCls = {admin:'br',editor:'bg',viewer:'bv'};
-    const label = actionLabels[a.action]||a.action;
-    return `<tr>
-      <td style="font-size:10px;color:var(--t3);font-family:var(--mono)">${(a.created_at||'').slice(0,16).replace('T',' ')}</td>
-      <td style="font-size:11px">${a.username||a.tg_username||`#${a.user_id||'?'}`}</td>
-      <td><span class="badge ${roleCls[a.user_role]||'bb'}" style="font-size:8px">${a.user_role||'—'}</span></td>
-      <td style="font-size:11px;color:var(--t1)">${label}</td>
-      <td style="font-size:10px;color:var(--t3)">${[a.entity,a.entity_id].filter(Boolean).join(' #')}</td>
-      <td style="font-size:10px;color:var(--t3);max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${details}">${details}</td>
-      <td style="font-size:10px;font-family:var(--mono);color:var(--t3)">${a.ip||'—'}</td>
-    </tr>`;
-  }).join('') || '<tr><td colspan="7" class="empty">Нет записей</td></tr>';
-  if(reset) { tbody.innerHTML = html; }
-  else { tbody.insertAdjacentHTML('beforeend', html); }
-  document.getElementById('audit-more').style.display = rows.length === 50 ? '' : 'none';
-}
-function loadMoreAudit() { auditOffset += 50; loadAudit(false); }
-
-// Запускаем приложение
+// ══ START ══════════════════════════════════════════════════════════════════
 init();
-
 </script>
 </body>
 </html>

@@ -1,234 +1,161 @@
 const fetch = require('node-fetch');
-const db = require('../database/db');
+const db    = require('../database/db');
 
-let polling = false;
-let lastUpdateId = 0;
-let botToken = null;
+let polling = false, lastUpdateId = 0;
 
-function getSetting(key, fallback = null) {
+function getSetting(key, fallback=null) {
   const row = db.prepare('SELECT value FROM settings WHERE key=?').get(key);
   if (!row) return fallback;
   try { return JSON.parse(row.value); } catch { return row.value; }
 }
+function getToken() { return getSetting('tg_bot_token') || process.env.TG_BOT_TOKEN; }
+function getMainChannel() { return getSetting('tg_main_channel') || process.env.TG_CHANNEL_ID; }
+const API = m => `https://api.telegram.org/bot${getToken()}/${m}`;
 
-function getToken() {
-  return getSetting('tg_bot_token') || process.env.TG_BOT_TOKEN;
+async function sendMsg(chatId, text, opts={}) {
+  if (!getToken()||!chatId) return;
+  try { await fetch(API('sendMessage'),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({chat_id:chatId,text,parse_mode:'HTML',...opts})}); }
+  catch(e) { console.error('Bot sendMsg error:', e.message); }
 }
-
-function getMainChannel() {
-  return getSetting('tg_main_channel') || process.env.TG_CHANNEL_ID;
-}
-
-const API = (method) => `https://api.telegram.org/bot${getToken()}/${method}`;
-
-async function sendMsg(chatId, text, opts = {}) {
-  if (!getToken() || !chatId) return;
-  try {
-    await fetch(API('sendMessage'), {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ chat_id: chatId, text, parse_mode: 'HTML', ...opts })
-    });
-  } catch(e) { console.error('Bot send error:', e.message); }
-}
-
-async function sendDoc(chatId, buffer, filename, caption = '') {
-  if (!getToken() || !chatId) return;
+async function sendDoc(chatId, buffer, filename, caption='') {
+  if (!getToken()||!chatId) return;
   const FormData = require('form-data');
   const form = new FormData();
-  form.append('chat_id', String(chatId));
-  form.append('caption', caption);
-  form.append('document', buffer, { filename });
-  try {
-    await fetch(API('sendDocument'), { method: 'POST', body: form });
-  } catch(e) { console.error('Bot doc error:', e.message); }
+  form.append('chat_id',String(chatId)); form.append('caption',caption); form.append('document',buffer,{filename});
+  try { await fetch(API('sendDocument'),{method:'POST',body:form}); } catch {}
 }
 
 function parseEntry(text) {
   const t = text.trim().toLowerCase();
-  // "12500 доход" or "доход 12500"
-  const revenueMatch = t.match(/(?:доход|выручка|поступление)\s*([\d\s]+(?:\.\d+)?)|^([\d\s]+(?:\.\d+)?)\s+(?:доход|выручка)/);
-  if (revenueMatch) {
-    const amount = parseFloat((revenueMatch[1] || revenueMatch[2]).replace(/\s/g, ''));
-    return { type: 'revenue', amount };
-  }
-  // "5000 расход реклама яндекс" or "расход 5000 реклама"
-  const expenseMatch = t.match(/(?:расход|трата|оплата)\s*([\d\s]+(?:\.\d+)?)\s*(.*)?|^([\d\s]+(?:\.\d+)?)\s+(?:расход|трата)\s*(.*)?/);
-  if (expenseMatch) {
-    const amount = parseFloat((expenseMatch[1] || expenseMatch[3] || '0').replace(/\s/g, ''));
-    const descRaw = (expenseMatch[2] || expenseMatch[4] || '').trim();
-    const cats = { 'реклама': 'Реклама', 'сервер': 'Сервера', 'хостинг': 'Сервера', 'лидтекс': 'LeadTex', 'leadtex': 'LeadTex', 'фнс': 'ФНС', 'налог': 'ФНС', 'тг': 'ТГ Прем', 'telegram': 'ТГ Прем' };
-    let category = 'Прочее';
-    for (const [k, v] of Object.entries(cats)) { if (descRaw.includes(k)) { category = v; break; } }
-    return { type: 'expense', amount, description: descRaw || category, category };
-  }
-  // "снятие 30000 артём" 
-  const withdrawMatch = t.match(/(?:снятие|снял|вывод|инкас)\s*([\d\s]+(?:\.\d+)?)\s*(.*)?/);
-  if (withdrawMatch) {
-    const amount = parseFloat(withdrawMatch[1].replace(/\s/g, ''));
-    const name = (withdrawMatch[2] || '').trim();
-    return { type: 'withdrawal', amount, partnerName: name };
+  const rev = t.match(/(?:доход|выручка|оплата)\s*([\d\s]+(?:\.\d+)?)|^([\d\s]+(?:\.\d+)?)\s+(?:доход|выручка)/);
+  if (rev) return { type:'income', amount:parseFloat((rev[1]||rev[2]).replace(/\s/g,'')) };
+  const exp = t.match(/(?:расход|трата|оплата\s+чего)\s*([\d\s]+(?:\.\d+)?)\s*(.*)?|^([\d\s]+(?:\.\d+)?)\s+(?:расход|трата)\s*(.*)?/);
+  if (exp) {
+    const amount = parseFloat((exp[1]||exp[3]||'0').replace(/\s/g,''));
+    const descRaw = (exp[2]||exp[4]||'').trim();
+    const catMap = {'реклама':'Реклама','сервер':'Сервера','хостинг':'Сервера','лидтекс':'LeadTex','фнс':'ФНС / Налоги','налог':'ФНС / Налоги','тг':'TG Premium'};
+    let catName = 'Прочий расход';
+    for (const [k,v] of Object.entries(catMap)) { if(descRaw.includes(k)){catName=v;break;} }
+    const cat = db.prepare('SELECT id FROM categories WHERE name=? LIMIT 1').get(catName);
+    return { type:'expense', amount, note:descRaw||catName, category_id:cat?.id||null };
   }
   return null;
 }
 
 async function handleMessage(msg) {
-  const chatId = msg.chat?.id;
-  const text = msg.text || '';
-  const today = new Date().toISOString().slice(0, 10);
+  const chatId = msg.chat?.id, text = msg.text||'';
+  const today  = new Date().toISOString().slice(0,10);
 
-  if (text === '/start' || text === '/help') {
-    await sendMsg(chatId, `🤖 <b>BAZA Bot</b>
+  // ── Инвайт через /start TOKEN ──────────────────────────────────────────
+  if (text.startsWith('/start ')) {
+    const token = text.slice(7).trim();
+    if (token.length > 10) {
+      const inv = db.prepare('SELECT * FROM invites WHERE token=?').get(token);
+      if (!inv || inv.used_at || new Date(inv.expires_at) < new Date()) {
+        await sendMsg(chatId, '❌ Приглашение недействительно или уже использовано.');
+        return;
+      }
+      // Привязываем TG пользователя
+      const tg_id   = String(msg.from.id);
+      const tg_name = [msg.from.first_name, msg.from.last_name].filter(Boolean).join(' ');
+      const tg_user = msg.from.username;
+      let partner;
+      if (inv.partner_id) {
+        partner = db.prepare('SELECT * FROM partners WHERE id=?').get(inv.partner_id);
+        if (partner) db.prepare('UPDATE partners SET tg_id=?,tg_username=?,tg_name=?,access_role=?,active=1 WHERE id=?').run(tg_id, tg_user||null, tg_name, inv.access_role, partner.id);
+      } else {
+        partner = db.prepare('SELECT * FROM partners WHERE tg_id=?').get(tg_id);
+        if (!partner) {
+          const r = db.prepare('INSERT INTO partners (name,tg_id,tg_username,tg_name,access_role,role) VALUES (?,?,?,?,?,?)').run(tg_name||tg_user||`user_${tg_id}`,tg_id,tg_user||null,tg_name,inv.access_role,'other');
+          partner = db.prepare('SELECT * FROM partners WHERE id=?').get(r.lastInsertRowid);
+        } else {
+          db.prepare('UPDATE partners SET access_role=?,tg_name=?,tg_username=? WHERE id=?').run(inv.access_role, tg_name, tg_user||null, partner.id);
+        }
+      }
+      db.prepare('UPDATE invites SET used_at=datetime("now") WHERE id=?').run(inv.id);
+      // Генерируем одноразовую ссылку для входа
+      const jwt = require('jsonwebtoken');
+      const loginToken = jwt.sign({ partner_id:partner.id, role:inv.access_role, one_time:true }, process.env.JWT_SECRET||'dev', { expiresIn:'15m' });
+      const siteUrl = getSetting('site_url')||process.env.SITE_URL||'https://hiprpol.hideyou.top';
+      await sendMsg(chatId, `✅ <b>Доступ получен!</b>\n\nРоль: <b>${inv.access_role}</b>\n\nНажми кнопку для входа на сайт (ссылка действует 15 минут):`, {
+        reply_markup: JSON.stringify({ inline_keyboard: [[{ text: '🚀 Войти в BAZA', url: `${siteUrl}/invite/login/${loginToken}` }]] })
+      });
+      return;
+    }
+  }
 
-<b>Команды:</b>
-/today — сводка за сегодня
-/month — сводка за месяц
-/report — отправить отчёт
-/help — эта справка
-
-<b>Быстрый ввод:</b>
-<code>доход 12500</code>
-<code>расход 5000 реклама яндекс</code>
-<code>расход 3000 сервера fornex</code>
-<code>снятие 30000 артём</code>
-
-Данные сохраняются за сегодняшнюю дату.`);
+  if (text === '/start') {
+    await sendMsg(chatId, `🤖 <b>BAZA Bot</b>\n\n<b>Команды:</b>\n/today — сводка за сегодня\n/month — сводка за месяц\n/report — отправить отчёт\n\n<b>Быстрый ввод:</b>\n<code>доход 12500</code>\n<code>расход 5000 реклама</code>`);
     return;
   }
 
   if (text === '/today') {
-    const entry = db.prepare("SELECT * FROM daily_entries WHERE date=?").get(today);
-    const exp = db.prepare("SELECT SUM(amount) as t FROM account_expenses WHERE date=?").get(today);
-    const net = (entry?.revenue || 0) - (entry?.expense || 0);
-    await sendMsg(chatId, `📊 <b>Сегодня ${today}</b>
-
-💰 Доход:  <b>${(entry?.revenue||0).toLocaleString('ru')} ₽</b>
-💸 Расход: <b>${(entry?.expense||0).toLocaleString('ru')} ₽</b>
-✅ Чистый: <b>${net.toLocaleString('ru')} ₽</b>
-🧾 Со счёта: <b>${(exp?.t||0).toLocaleString('ru')} ₽</b>`);
+    const inc = db.prepare(`SELECT COALESCE(SUM(amount),0) as t FROM transactions WHERE direction='in' AND date=? AND mode='live'`).get(today).t;
+    const exp = db.prepare(`SELECT COALESCE(SUM(amount),0) as t FROM transactions WHERE direction='out' AND date=? AND mode='live'`).get(today).t;
+    await sendMsg(chatId, `📊 <b>${today}</b>\n\n💰 Приход:  <b>${inc.toLocaleString('ru')} ₽</b>\n💸 Расход:  <b>${exp.toLocaleString('ru')} ₽</b>\n✅ Баланс: <b>${(inc-exp).toLocaleString('ru')} ₽</b>`);
     return;
   }
-
   if (text === '/month') {
-    const prefix = today.slice(0, 7);
-    const b = db.prepare("SELECT SUM(revenue) as r, SUM(expense) as e FROM daily_entries WHERE date LIKE ?").get(`${prefix}%`);
-    const acc = db.prepare("SELECT SUM(amount) as t FROM account_expenses WHERE date LIKE ?").get(`${prefix}%`);
-    const net = (b?.r||0) - (b?.e||0);
-    await sendMsg(chatId, `📅 <b>Месяц ${prefix}</b>
-
-💰 Выручка:  <b>${(b?.r||0).toLocaleString('ru')} ₽</b>
-💸 Расход:   <b>${(b?.e||0).toLocaleString('ru')} ₽</b>
-✅ Чистый:   <b>${net.toLocaleString('ru')} ₽</b>
-🧾 Со счёта: <b>${(acc?.t||0).toLocaleString('ru')} ₽</b>`);
+    const prefix = today.slice(0,7);
+    const inc = db.prepare(`SELECT COALESCE(SUM(amount),0) as t FROM transactions WHERE direction='in' AND date LIKE ? AND mode='live'`).get(`${prefix}%`).t;
+    const exp = db.prepare(`SELECT COALESCE(SUM(amount),0) as t FROM transactions WHERE direction='out' AND date LIKE ? AND mode='live'`).get(`${prefix}%`).t;
+    await sendMsg(chatId, `📅 <b>${prefix}</b>\n\n💰 Приход:  <b>${inc.toLocaleString('ru')} ₽</b>\n💸 Расход:  <b>${exp.toLocaleString('ru')} ₽</b>\n✅ Итого: <b>${(inc-exp).toLocaleString('ru')} ₽</b>`);
     return;
   }
-
   if (text === '/report') {
-    await sendMsg(chatId, '⏳ Генерирую отчёт...');
-    try {
-      const { sendDailyReport } = require('./telegram');
-      await sendDailyReport();
-      await sendMsg(chatId, '✅ Отчёт отправлен!');
-    } catch(e) { await sendMsg(chatId, '❌ Ошибка: ' + e.message); }
+    await sendMsg(chatId, '⏳ Отправляю...');
+    try { await require('./telegram').sendDailyReport(); await sendMsg(chatId, '✅ Отчёт отправлен!'); }
+    catch(e) { await sendMsg(chatId, '❌ ' + e.message); }
     return;
   }
 
-  // Natural language
   const parsed = parseEntry(text);
-  if (!parsed) { await sendMsg(chatId, '❓ Не понял. Напиши /help для справки.'); return; }
-
+  if (!parsed) { await sendMsg(chatId, '❓ Не понял. Напиши /help'); return; }
   try {
-    if (parsed.type === 'revenue') {
-      db.prepare(`INSERT INTO daily_entries (date,revenue,expense,note) VALUES (?,?,0,'') ON CONFLICT(date) DO UPDATE SET revenue=revenue+excluded.revenue`).run(today, parsed.amount);
-      await sendMsg(chatId, `✅ <b>Доход записан</b>\n💰 +${parsed.amount.toLocaleString('ru')} ₽ за ${today}`);
-    } else if (parsed.type === 'expense') {
-      db.prepare(`INSERT INTO account_expenses (date,category,description,amount) VALUES (?,?,?,?)`).run(today, parsed.category, parsed.description, parsed.amount);
-      await sendMsg(chatId, `✅ <b>Расход записан</b>\n💸 ${parsed.amount.toLocaleString('ru')} ₽ — ${parsed.description}\nКатегория: ${parsed.category}`);
-    } else if (parsed.type === 'withdrawal') {
-      let partner = null;
-      if (parsed.partnerName) {
-        const all = db.prepare('SELECT * FROM partners WHERE active=1').all();
-        partner = all.find(p => p.name.toLowerCase().includes(parsed.partnerName)) || null;
-      }
-      if (partner) {
-        db.prepare(`INSERT INTO partner_daily (date,partner_id,amount,type) VALUES (?,?,?,'withdrawal')`).run(today, partner.id, parsed.amount);
-        await sendMsg(chatId, `✅ <b>Снятие записано</b>\n👤 ${partner.name}: ${parsed.amount.toLocaleString('ru')} ₽`);
-      } else {
-        await sendMsg(chatId, `❓ Партнёр "${parsed.partnerName}" не найден. Доступные: ${db.prepare('SELECT name FROM partners WHERE active=1').all().map(p=>p.name).join(', ')}`);
-      }
+    if (parsed.type === 'income') {
+      const cat = db.prepare("SELECT id FROM categories WHERE name='Оплата VPN' LIMIT 1").get();
+      db.prepare(`INSERT INTO transactions (date,direction,amount,category_id,note,mode) VALUES (?,?,?,?,?,?)`).run(today,'in',parsed.amount,cat?.id||null,'Бот: доход','live');
+      await sendMsg(chatId, `✅ Записано\n💰 +${parsed.amount.toLocaleString('ru')} ₽ — доход`);
+    } else {
+      db.prepare(`INSERT INTO transactions (date,direction,amount,category_id,note,mode) VALUES (?,?,?,?,?,?)`).run(today,'out',parsed.amount,parsed.category_id||null,parsed.note||'Бот: расход','live');
+      await sendMsg(chatId, `✅ Записано\n💸 ${parsed.amount.toLocaleString('ru')} ₽ — ${parsed.note}`);
     }
-  } catch(e) { await sendMsg(chatId, '❌ Ошибка сохранения: ' + e.message); }
+  } catch(e) { await sendMsg(chatId, '❌ Ошибка: ' + e.message); }
 }
 
 async function poll() {
   if (!polling) return;
   const token = getToken();
-  if (!token) { setTimeout(poll, 5000); return; }
+  if (!token) { setTimeout(poll, 10000); return; }
   try {
-    const r = await fetch(`https://api.telegram.org/bot${token}/getUpdates?offset=${lastUpdateId + 1}&timeout=20&limit=10`, { timeout: 25000 });
-    if (!r.ok) { setTimeout(poll, 3000); return; }
-    const data = await r.json();
-    if (data.ok && data.result?.length) {
-      for (const update of data.result) {
-        lastUpdateId = update.update_id;
-        if (update.message) await handleMessage(update.message);
+    const r = await fetch(`https://api.telegram.org/bot${token}/getUpdates?offset=${lastUpdateId+1}&timeout=20&limit=10`, { timeout: 25000 });
+    if (r.ok) {
+      const data = await r.json();
+      if (data.ok && data.result?.length) {
+        for (const upd of data.result) { lastUpdateId = upd.update_id; if (upd.message) await handleMessage(upd.message); }
       }
     }
-  } catch(e) { /* network errors are normal */ }
+  } catch {}
   if (polling) setTimeout(poll, 1000);
 }
 
 function startBot() {
   if (polling) return;
-  const token = getToken();
-  if (!token) { console.log('⚠️  TG Bot token not set — bot inactive'); return; }
+  if (!getToken()) { console.log('⚠️  TG токен не настроен'); return; }
   polling = true;
-  console.log('🤖 Telegram bot started (polling)');
+  console.log('🤖 Telegram бот запущен');
   poll();
 }
-
-function stopBot() { polling = false; }
-
-function restartBot() { stopBot(); setTimeout(startBot, 1000); }
-
-// Notification helpers
-async function notifyNewEntry({ date, revenue, expense, note }) {
-  const channel = getMainChannel();
-  if (!channel || !getToken()) return;
-  await sendMsg(channel, `📝 <b>Новая запись</b> ${date}\n💰 ${revenue.toLocaleString('ru')} ₽ доход\n💸 ${expense.toLocaleString('ru')} ₽ расход${note ? '\n📌 ' + note : ''}`);
-}
+function stopBot()    { polling = false; }
+function restartBot() { stopBot(); setTimeout(startBot, 1500); }
 
 async function notifyNewExpense({ date, category, description, amount }) {
-  const channel = getMainChannel();
-  if (!channel || !getToken()) return;
-  await sendMsg(channel, `🧾 <b>Новый расход</b> ${date}\n💸 ${amount.toLocaleString('ru')} ₽ — ${description}\nКатегория: ${category}`);
-  // Also notify each partner who has tg_chat_id set
-  const notifyPartners = getSetting('notify_partners_expenses', false);
-  if (notifyPartners) {
-    const partners = db.prepare('SELECT * FROM partners WHERE active=1 AND tg_chat_id IS NOT NULL AND tg_chat_id != ""').all();
-    for (const p of partners) {
-      await sendMsg(p.tg_chat_id, `🧾 <b>Расход компании</b>\n${date}: ${description} — ${amount.toLocaleString('ru')} ₽ (${category})`);
-    }
-  }
+  const ch = getMainChannel(); if (!ch) return;
+  await sendMsg(ch, `🧾 <b>Новый расход</b>\n${date}: ${description} — ${amount.toLocaleString('ru')} ₽\n${category}`);
 }
-
 async function notifyBudgetExceeded(category, spent, limit) {
-  const channel = getMainChannel();
-  if (!channel || !getToken()) return;
-  await sendMsg(channel, `🚨 <b>Превышен лимит!</b>\nКатегория: ${category}\nЛимит: ${limit.toLocaleString('ru')} ₽\nФакт: ${spent.toLocaleString('ru')} ₽ (+${(spent-limit).toLocaleString('ru')} ₽)`);
+  const ch = getMainChannel(); if (!ch) return;
+  await sendMsg(ch, `🚨 <b>Лимит превышен!</b>\n${category}: ${spent.toLocaleString('ru')} ₽ (лимит: ${limit.toLocaleString('ru')} ₽)`);
 }
 
-async function sendDailyToPartners(reportText, pdfBuf, xlsBuf) {
-  const partners = db.prepare('SELECT * FROM partners WHERE active=1 AND tg_chat_id IS NOT NULL AND tg_chat_id != ""').all();
-  const sendReports = getSetting('notify_partner_daily_report', false);
-  if (!sendReports || !getToken()) return;
-  const today = new Date().toISOString().slice(0,10);
-  for (const p of partners) {
-    try {
-      await sendMsg(p.tg_chat_id, reportText);
-      if (pdfBuf) await sendDoc(p.tg_chat_id, pdfBuf, `report_${today}.pdf`, `📄 PDF отчёт`);
-    } catch(e) {}
-  }
-}
-
-module.exports = { startBot, stopBot, restartBot, sendMsg, sendDoc, notifyNewEntry, notifyNewExpense, notifyBudgetExceeded, sendDailyToPartners, getToken, getMainChannel };
+module.exports = { startBot, stopBot, restartBot, sendMsg, sendDoc, getToken, getMainChannel, notifyNewExpense, notifyBudgetExceeded };
