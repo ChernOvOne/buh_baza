@@ -40,21 +40,33 @@ function getSetting(key, fallback=null) {
 const qs = (m,y) => (m&&y) ? `${y}-${String(m).padStart(2,'0')}` : null;
 
 // ── AUTH ──────────────────────────────────────────────────────────────────
+
+// Настройки cookie — secure нужен на HTTPS
+function cookieOpts() {
+  const isHttps = process.env.COOKIE_SECURE === 'true'
+    || process.env.NODE_ENV === 'production'
+    || (process.env.SITE_URL || '').startsWith('https');
+  return {
+    httpOnly: true,
+    maxAge: 30 * 24 * 3600 * 1000,
+    sameSite: isHttps ? 'none' : 'lax',
+    secure: isHttps,
+    path: '/',
+  };
+}
+
 router.post('/auth/login', async (req, res) => {
   const { username, password } = req.body;
   if (!username || !password) return res.status(400).json({ error: 'Введи логин и пароль' });
 
-  // ── Admin через ADMIN_PASSWORD из .env ──────────────────────────────────
+  // ── Admin через ADMIN_PASSWORD из .env ─────────────────────────────────
   if (username === 'admin' && process.env.ADMIN_PASSWORD) {
-    // Прямое сравнение паролей — без зависимости от ADMIN_HASH
     const validDirect = (password === process.env.ADMIN_PASSWORD);
-    // Дополнительно пробуем bcrypt если хэш уже готов
     let validHash = false;
     if (process.env.ADMIN_HASH) {
       try { validHash = await bcrypt.compare(password, process.env.ADMIN_HASH); } catch {}
     }
     if (validDirect || validHash) {
-      // Создаём/обновляем запись admin в БД
       let user = db.prepare("SELECT * FROM users WHERE username='admin'").get();
       if (!user) {
         const hash = await bcrypt.hash(process.env.ADMIN_PASSWORD, 10);
@@ -63,23 +75,22 @@ router.post('/auth/login', async (req, res) => {
       }
       if (!user) return res.status(500).json({ error: 'Ошибка создания пользователя' });
       const token = jwt.sign({ user_id: user.id, role: 'admin' }, process.env.JWT_SECRET, { expiresIn: '30d' });
-      res.cookie('token', token, { httpOnly: true, maxAge: 30*24*3600*1000, sameSite: 'lax' });
+      res.cookie('token', token, cookieOpts());
       try { audit(req, 'login', 'user', user.id, { username: 'admin' }); } catch {}
       return res.json({ ok: true, role: 'admin', username: 'admin' });
     }
-    // Если username=admin но пароль неверный — сразу возвращаем ошибку
     return res.status(401).json({ error: 'Неверный пароль' });
   }
 
-  // ── Обычный пользователь из БД ───────────────────────────────────────────
+  // ── Обычный пользователь из БД ─────────────────────────────────────────
   const user = db.prepare('SELECT * FROM users WHERE username=? AND active=1').get(username);
   if (!user || !user.password) return res.status(401).json({ error: 'Пользователь не найден' });
   const valid = await bcrypt.compare(password, user.password);
   if (!valid) return res.status(401).json({ error: 'Неверный пароль' });
   const token = jwt.sign({ user_id: user.id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '30d' });
-  res.cookie('token', token, { httpOnly: true, maxAge: 30*24*3600*1000, sameSite: 'lax' });
+  res.cookie('token', token, cookieOpts());
   try { audit(req, 'login', 'user', user.id, { username: user.username }); } catch {}
-  res.json({ ok:true, role:user.role, username:user.username });
+  res.json({ ok: true, role: user.role, username: user.username });
 });
 
 // Telegram auth (widget callback)
